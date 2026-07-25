@@ -1,0 +1,2240 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>TV Marketing — Painel de Gestão</title>
+<style>
+  :root{
+    --azul-escuro:#0a1a3c;
+    --azul:#13316b;
+    --azul-claro:#2a5cb8;
+    --preto:#0b0b0d;
+    --branco:#ffffff;
+    --cinza-bg:#f4f6fb;
+    --cinza-borda:#dde3ee;
+    --cinza-texto:#5a6478;
+    --verde:#1c8a4a;
+    --vermelho:#c23b3b;
+    --amarelo:#caa419;
+    --sombra:0 4px 18px rgba(10,26,60,.08);
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    font-family:'Segoe UI',Arial,sans-serif;
+    background:var(--cinza-bg);
+    color:var(--preto);
+    padding:0 0 60px 0;
+  }
+  /* ===== HEADER ===== */
+  header{
+    background:linear-gradient(120deg,var(--azul-escuro) 0%,var(--azul) 60%,var(--preto) 130%);
+    color:#fff;
+    padding:22px 32px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:16px;
+    box-shadow:var(--sombra);
+  }
+  .header-left{display:flex; align-items:center; gap:16px;}
+  .header-left img{height:58px; width:58px; object-fit:contain; background:#fff; border-radius:12px; padding:6px;}
+  .header-titles h1{font-size:20px; letter-spacing:.5px; font-weight:700;}
+  .header-titles p{font-size:12.5px; color:#b9c6e8; margin-top:2px;}
+  .header-empresa{
+    font-size:11.5px; color:#8fa3d6; line-height:1.7;
+    padding:4px 0 4px 18px; border-left:2px solid rgba(255,255,255,.18);
+    white-space:nowrap;
+    display:flex; flex-direction:column; align-items:flex-start;
+  }
+  .header-empresa strong{color:#fff; font-size:13px; letter-spacing:.3px; margin-bottom:3px;}
+  .header-empresa span{display:block; text-align:left;}
+
+  /* ===== NAV ===== */
+  nav{
+    display:flex; gap:6px; background:#fff;
+    padding:10px 32px; border-bottom:1px solid var(--cinza-borda);
+    position:sticky; top:0; z-index:50; flex-wrap:wrap;
+  }
+  nav button{
+    background:transparent; border:none; padding:9px 16px;
+    font-size:13.5px; font-weight:600; color:var(--cinza-texto);
+    border-radius:8px; cursor:pointer; transition:.15s;
+  }
+  nav button:hover{background:var(--cinza-bg); color:var(--azul);}
+  nav button.ativo{background:var(--azul); color:#fff;}
+
+  main{padding:26px 32px; max-width:1400px; margin:0 auto;}
+  .tela{display:none;}
+  .tela.ativa{display:block;}
+
+  /* ===== CARDS KPI ===== */
+  .kpis{display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:16px; margin-bottom:24px;}
+  .kpi{
+    background:#fff; border-radius:14px; padding:18px 20px;
+    box-shadow:var(--sombra); border-left:5px solid var(--azul);
+  }
+  .kpi.alerta{border-left-color:var(--amarelo);}
+  .kpi.bom{border-left-color:var(--verde);}
+  .kpi.ruim{border-left-color:var(--vermelho);}
+  .kpi .label{font-size:11.5px; color:var(--cinza-texto); text-transform:uppercase; letter-spacing:.6px; font-weight:600;}
+  .kpi .valor{font-size:25px; font-weight:800; color:var(--azul-escuro); margin-top:6px;}
+  .kpi .sub{font-size:11.5px; color:var(--cinza-texto); margin-top:4px;}
+
+  /* ===== PANEL ===== */
+  .painel{
+    background:#fff; border-radius:14px; box-shadow:var(--sombra);
+    padding:22px; margin-bottom:24px;
+  }
+  .painel h2{font-size:16px; color:var(--azul-escuro); margin-bottom:14px; display:flex; align-items:center; gap:8px;}
+  .painel h2 .tag{
+    font-size:10.5px; background:var(--azul); color:#fff; padding:3px 9px;
+    border-radius:20px; font-weight:700; letter-spacing:.4px;
+  }
+
+  /* ===== TABLE ===== */
+  table{width:100%; border-collapse:collapse; font-size:12.8px;}
+  th{
+    text-align:left; padding:10px 10px; background:var(--azul-escuro); color:#fff;
+    font-weight:600; font-size:11.5px; text-transform:uppercase; letter-spacing:.3px;
+  }
+  th:first-child{border-radius:8px 0 0 0;}
+  th:last-child{border-radius:0 8px 0 0;}
+  td{padding:9px 10px; border-bottom:1px solid var(--cinza-borda); color:#22273a;}
+  tr:hover td{background:#f7f9fd;}
+  .pill{display:inline-block; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700;}
+  .pill-pago{background:#e3f5ea; color:var(--verde);}
+  .pill-naopago{background:#fdeeee; color:var(--vermelho);}
+  .pill-venc{background:#fff5dc; color:#9c7c0d;}
+  .pill-ok{background:#e8edfb; color:var(--azul);}
+
+  /* ===== FILTERS ===== */
+  .filtros{display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px;}
+  .filtros input, .filtros select{
+    padding:9px 12px; border:1px solid var(--cinza-borda); border-radius:8px;
+    font-size:12.8px; background:#fff; color:var(--preto);
+  }
+  .filtros input{flex:1; min-width:200px;}
+
+  /* ===== TV CHECKBOX CARDS ===== */
+  .tv-card{
+    display:flex; align-items:center; gap:9px; padding:10px 12px;
+    border:1.5px solid var(--cinza-borda); border-radius:9px; cursor:pointer;
+    font-size:12.8px; font-weight:600; color:#22273a; transition:.15s;
+    background:#fff;
+  }
+  .tv-card:hover{border-color:var(--azul-claro);}
+  .tv-card.selecionado{border-color:var(--azul); background:#eef3fc;}
+  .tv-card input{width:16px; height:16px; cursor:pointer; accent-color:var(--azul);}
+
+  /* ===== BUTTONS ===== */
+  .btn{
+    background:var(--azul); color:#fff; border:none; padding:10px 18px;
+    border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; transition:.15s;
+  }
+  .btn:hover{background:var(--azul-escuro);}
+  .btn-outline{background:#fff; color:var(--azul); border:1.5px solid var(--azul);}
+  .btn-outline:hover{background:var(--azul); color:#fff;}
+  .btn-secundario{background:var(--preto); color:#fff;}
+  .btn-secundario:hover{background:#000;}
+  .acoes-topo{display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end; margin-bottom:16px;}
+
+  /* ===== FORM (cadastro) ===== */
+  .form-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:14px;}
+  .campo label{display:block; font-size:11.5px; font-weight:700; color:var(--cinza-texto); margin-bottom:5px; text-transform:uppercase; letter-spacing:.3px;}
+  .campo input, .campo select{
+    width:100%; padding:10px 12px; border:1px solid var(--cinza-borda); border-radius:8px; font-size:13px;
+  }
+
+  /* ===== empty state ===== */
+  .vazio{text-align:center; padding:40px 20px; color:var(--cinza-texto);}
+
+  /* ===== Modal Import ===== */
+  .modal-bg{display:none; position:fixed; inset:0; background:rgba(10,15,30,.55); z-index:200; align-items:center; justify-content:center;}
+  .modal-bg.ativo{display:flex;}
+  .modal{background:#fff; border-radius:14px; padding:26px; max-width:480px; width:92%; box-shadow:0 10px 40px rgba(0,0,0,.3);}
+  .modal h3{color:var(--azul-escuro); margin-bottom:10px; font-size:16px;}
+  .modal p{font-size:12.8px; color:var(--cinza-texto); margin-bottom:14px; line-height:1.6;}
+  .modal textarea{width:100%; min-height:70px; border:1px solid var(--cinza-borda); border-radius:8px; padding:10px; font-size:12.5px; margin-bottom:12px;}
+  .modal .modal-acoes{display:flex; gap:10px; justify-content:flex-end;}
+
+  /* ===== CARDS PENDENTES DO FORMS ===== */
+  .pendente-card{
+    background:#f7f9fd; border:1.5px solid var(--cinza-borda); border-radius:10px;
+    padding:14px 16px; margin-bottom:10px; display:flex; justify-content:space-between;
+    align-items:flex-start; gap:12px; flex-wrap:wrap;
+  }
+  .pendente-card:hover{border-color:var(--azul-claro);}
+  .pendente-info{flex:1;}
+  .pendente-info .pnome{font-weight:700; color:var(--azul-escuro); font-size:13.5px;}
+  .pendente-info .pmeta{font-size:11.5px; color:var(--cinza-texto); margin-top:3px;}
+  .pendente-info .ptipo{
+    display:inline-block; background:var(--azul); color:#fff;
+    font-size:10.5px; font-weight:700; padding:2px 9px; border-radius:20px; margin-top:5px;
+  }
+  .pendente-acoes{display:flex; gap:8px; flex-shrink:0; flex-wrap:wrap;}
+  .btn-gerar{background:var(--verde); color:#fff; border:none; padding:8px 14px;
+    border-radius:8px; font-size:12px; font-weight:700; cursor:pointer;}
+  .btn-gerar:hover{background:#166b3c;}
+  .btn-deletar{background:#fdeeee; color:var(--vermelho); border:none; padding:8px 12px;
+    border-radius:8px; font-size:12px; font-weight:700; cursor:pointer;}
+  .btn-deletar:hover{background:#fad5d5;}
+  .btn-docs{background:#eef1f8; color:var(--azul); border:1px solid var(--cinza-borda); padding:8px 12px;
+    border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; gap:4px;}
+  .btn-docs:hover{background:var(--azul);color:#fff;border-color:var(--azul);}
+
+  /* ===== GERADOR DE CONTRATOS ===== */
+  .tipo-selector{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;}
+  .tipo-card{background:#fff;border:2px solid var(--cinza-borda);border-radius:14px;
+    padding:20px;cursor:pointer;transition:.15s;text-align:center;}
+  .tipo-card:hover{border-color:var(--azul-claro);}
+  .tipo-card.ativo{border-color:var(--azul);background:#eef3fc;}
+  .tipo-card .icone{font-size:28px;margin-bottom:6px;}
+  .tipo-card h3{font-size:13px;font-weight:700;color:var(--azul);margin-bottom:3px;}
+  .tipo-card p{font-size:11.5px;color:var(--cinza-texto);}
+  .form-section{background:#fff;border-radius:14px;box-shadow:var(--sombra);padding:22px;margin-bottom:16px;}
+  .form-section h2{font-size:13.5px;font-weight:700;color:var(--azul);margin-bottom:14px;
+    padding-bottom:10px;border-bottom:1px solid var(--cinza-borda);display:flex;align-items:center;gap:8px;}
+  .form-section h2 .num{background:var(--azul);color:#fff;width:20px;height:20px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;}
+  .form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;}
+  .gcampo label{display:block;font-size:10.5px;font-weight:700;color:var(--cinza-texto);
+    text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;}
+  .gcampo input,.gcampo select{width:100%;padding:9px 11px;border:1.5px solid var(--cinza-borda);
+    border-radius:8px;font-size:12.5px;font-family:inherit;color:#1a1f2e;background:#fff;}
+  .gcampo input:focus,.gcampo select:focus{outline:none;border-color:var(--azul-claro);}
+  .gcampo.span2{grid-column:span 2;}
+  .locais-lista{display:flex;flex-direction:column;gap:7px;margin-bottom:9px;}
+  .glocal-item{display:flex;gap:8px;align-items:center;}
+  .glocal-item input{flex:1;padding:9px 11px;border:1.5px solid var(--cinza-borda);border-radius:8px;font-size:12.5px;}
+  .glocal-item button{background:#fdeeee;color:#c23b3b;border:none;border-radius:6px;
+    padding:7px 10px;cursor:pointer;font-size:15px;line-height:1;}
+  .btn-add-local{background:var(--cinza-bg);color:var(--azul-claro);border:1.5px dashed var(--azul-claro);
+    border-radius:8px;padding:8px;width:100%;cursor:pointer;font-size:12.5px;font-weight:600;margin-top:4px;}
+  /* Contrato impresso */
+  .contrato-doc{font-family:Arial,sans-serif;font-size:11.5pt;line-height:1.75;color:#000;
+    background:#fff;padding:32px;border-radius:12px;box-shadow:var(--sombra);margin-top:16px;}
+  .contrato-doc h1{font-size:12.5pt;text-align:center;margin-bottom:5px;text-transform:uppercase;}
+  .contrato-doc .cdoc-sub{font-size:11pt;text-align:center;margin-bottom:18px;font-style:italic;}
+  .contrato-doc .cdoc-secao{font-weight:bold;margin:16px 0 3px;text-decoration:underline;}
+  .contrato-doc p{margin-bottom:7px;text-align:justify;}
+  .contrato-doc .cdoc-clausula{font-weight:bold;margin-top:14px;margin-bottom:3px;}
+  .contrato-doc .cdoc-item{margin-left:18px;}
+  .contrato-doc .cdoc-ass-wrap{margin-top:48px;}
+  .contrato-doc .cdoc-linha{display:inline-block;border-top:1px solid #000;width:260px;
+    margin-top:46px;padding-top:4px;font-size:10pt;margin-right:40px;vertical-align:top;}
+  .contrato-doc .cdoc-test{margin-top:36px;}
+  @media print{
+    .tela-gerador-acoes{display:none!important;}
+    .contrato-doc{box-shadow:none;padding:0;border-radius:0;}
+  }
+
+  /* ===== PRINT ===== */
+  @media print{
+    nav, .acoes-topo, .filtros, .no-print{display:none !important;}
+    body{background:#fff; padding:0;}
+    header{background:#0a1a3c !important; -webkit-print-color-adjust:exact; print-color-adjust:exact;}
+    .painel{box-shadow:none; border:1px solid #ccc;}
+    main{padding:10px;}
+    .quebra-pagina{page-break-before:always; break-before:page;}
+  }
+
+  @media (max-width:720px){
+    header{padding:16px;}
+    main{padding:16px;}
+    .header-empresa{display:none;}
+  }
+</style>
+</head>
+<body>
+
+<!-- TELA DE SENHA -->
+<div id="tela-senha" style="
+  position:fixed;inset:0;z-index:9999;
+  background:linear-gradient(135deg,#0a1a3c 0%,#13316b 100%);
+  display:flex;align-items:center;justify-content:center;
+">
+  <div style="
+    background:#fff;border-radius:18px;padding:48px 40px;
+    text-align:center;max-width:380px;width:90%;
+    box-shadow:0 20px 60px rgba(0,0,0,.4);
+  ">
+    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%230a1a3c'/%3E%3Crect x='18' y='20' width='28' height='18' rx='2' fill='%23fff'/%3E%3Crect x='22' y='40' width='20' height='4' rx='1' fill='%23fff'/%3E%3C/svg%3E"
+      style="width:60px;height:60px;margin-bottom:20px;">
+    <div style="font-size:11px;font-weight:800;color:#8fa3d6;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;">TV Marketing</div>
+    <h2 style="font-size:22px;font-weight:900;color:#0a1a3c;margin-bottom:6px;">Painel de Gestão</h2>
+    <p style="font-size:13px;color:#5a6478;margin-bottom:28px;">Área restrita. Digite a senha para continuar.</p>
+    <div style="position:relative;margin-bottom:12px;">
+      <input type="password" id="input-senha" placeholder="Digite a senha"
+        style="width:100%;padding:12px 44px 12px 16px;border:1.5px solid #dde3ee;border-radius:10px;font-size:15px;font-family:inherit;color:#0a1a3c;outline:none;"
+        onkeydown="if(event.key==='Enter') verificarSenha()"
+        oninput="document.getElementById('erro-senha').style.display='none'">
+      <button type="button" onclick="toggleSenha()" id="btn-olho"
+        style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:18px;color:#888;padding:0;line-height:1;">👁</button>
+    </div>
+    <div id="erro-senha" style="display:none;color:#c23b3b;font-size:12px;margin-bottom:10px;">❌ Senha incorreta. Tente novamente.</div>
+    <button onclick="verificarSenha()" style="
+      width:100%;background:linear-gradient(135deg,#0a1a3c,#13316b);
+      color:#fff;border:none;padding:13px;border-radius:10px;
+      font-size:15px;font-weight:800;cursor:pointer;font-family:inherit;
+    ">Entrar</button>
+    <p style="font-size:11px;color:#aaa;margin-top:16px;">França Produções e Serviços Ltda</p>
+  </div>
+</div>
+
+<div id="conteudo-painel" style="display:none;">
+
+<header>
+  <div class="header-left">
+    <img id="logoImg" src="" alt="TV Marketing">
+    <div class="header-titles">
+      <h1>PAINEL DE GESTÃO — TV MARKETING</h1>
+      <p>Controle de locação, vencimentos e comissões</p>
+    </div>
+  </div>
+  <div class="header-empresa">
+    <strong>FRANÇA PRODUÇÕES E SERVIÇOS LTDA</strong>
+    <span>CNPJ: 46.315.922/0001-99</span>
+    <span>Rua Eugênio Siqueira Salgado, 101 - Casa B - Bosque da Princesa - Pindamonhangaba/SP</span>
+  </div>
+</header>
+
+<nav id="navMenu">
+  <button data-tela="visao" class="ativo">Visão Geral</button>
+  <button data-tela="vencimentos">Vencimentos (45 dias)</button>
+  <button data-tela="contratos">Contratos</button>
+  <button data-tela="fechamento">Fechamento de Comissão</button>
+  <button data-tela="gerador">📄 Gerar Contrato</button>
+</nav>
+
+<main>
+
+  <!-- ===================== VISÃO GERAL ===================== -->
+  <section id="tela-visao" class="tela ativa">
+    <div class="acoes-topo no-print" style="justify-content:space-between; align-items:center;">
+      <div id="statusSync" style="font-size:11.5px; color:#5a6478; font-weight:600;"></div>
+      <div style="display:flex; gap:10px;">
+        <button class="btn-outline btn" id="btnSync" onclick="buscarDadosAppsScript()" style="display:none;">🔄 Sincronizar</button>
+        <button class="btn" onclick="abrirModalImport()">Atualizar planilha</button>
+        <button class="btn-outline btn" onclick="irPara('fechamento')">Gerar fechamento do período</button>
+      </div>
+    </div>
+
+    <div class="kpis" id="kpisGeral"></div>
+
+    <div class="painel">
+      <h2>Faturamento por Local (TV) <span class="tag">Valor mensal contratado</span></h2>
+      <div id="graficoLocais"></div>
+    </div>
+
+    <div class="painel">
+      <h2>Contratos vencendo nos próximos 45 dias</h2>
+      <table id="tabelaVisaoVenc">
+        <thead><tr><th>TV</th><th>Anunciante</th><th>Segmento</th><th>Vencimento</th><th>Dias restantes</th><th>Status</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ===================== VENCIMENTOS ===================== -->
+  <section id="tela-vencimentos" class="tela">
+    <div class="painel">
+      <h2>Contratos a vencer — alerta de 45 dias <span class="tag" id="tagHoje"></span></h2>
+      <div class="filtros no-print">
+        <input type="text" id="buscaVenc" placeholder="Buscar por anunciante, TV ou segmento...">
+        <select id="filtroVencStatus">
+          <option value="todos">Todos</option>
+          <option value="vencido">Já vencidos</option>
+          <option value="urgente">Vence em até 15 dias</option>
+          <option value="alerta">Vence em até 45 dias</option>
+        </select>
+      </div>
+      <table id="tabelaVencimentos">
+        <thead><tr><th>TV</th><th>Anunciante</th><th>Segmento</th><th>Início</th><th>Vencimento</th><th>Dias restantes</th><th>Forma Pag.</th><th>Valor Mensal</th><th>Status</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ===================== CONTRATOS ===================== -->
+  <section id="tela-contratos" class="tela">
+    <div class="painel">
+      <h2>Todos os contratos</h2>
+      <div class="filtros no-print">
+        <input type="text" id="buscaContratos" placeholder="Buscar por anunciante, TV ou segmento...">
+        <select id="filtroTV"><option value="">Todas as TVs</option></select>
+        <select id="filtroPag"><option value="">Todas as formas de pagamento</option></select>
+      </div>
+      <table id="tabelaContratos">
+        <thead><tr><th>TV</th><th>Anunciante</th><th>Segmento</th><th>Início</th><th>Vencimento</th><th>Forma Pag.</th><th>Valor Mensal</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ===================== FECHAMENTO ===================== -->
+  <section id="tela-fechamento" class="tela">
+    <div class="painel no-print">
+      <h2>Selecionar período de fechamento <span class="tag">Dia 05 ao dia 05</span></h2>
+      <div class="filtros" style="align-items:center; gap:12px;">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <label style="font-size:12px; font-weight:700; color:var(--cinza-texto); white-space:nowrap;">De:</label>
+          <input type="date" id="dataIniFechamento" style="padding:9px 12px; border:1px solid var(--cinza-borda); border-radius:8px; font-size:13px;">
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <label style="font-size:12px; font-weight:700; color:var(--cinza-texto); white-space:nowrap;">Até:</label>
+          <input type="date" id="dataFimFechamento" style="padding:9px 12px; border:1px solid var(--cinza-borda); border-radius:8px; font-size:13px;">
+        </div>
+      </div>
+
+      <h2 style="margin-top:18px;">Selecionar locais (TVs) para o relatório individual</h2>
+      <div style="display:flex; gap:10px; margin-bottom:12px;">
+        <button class="btn-outline btn" style="padding:7px 14px; font-size:12px;" onclick="marcarTodasTvs(true)">Marcar todas</button>
+        <button class="btn-outline btn" style="padding:7px 14px; font-size:12px;" onclick="marcarTodasTvs(false)">Desmarcar todas</button>
+      </div>
+      <div id="listaTvsFechamento" style="display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:10px; margin-bottom:18px;"></div>
+
+      <div class="filtros">
+        <button class="btn" onclick="gerarFechamento()">Gerar fechamento</button>
+        <button class="btn-secundario btn" onclick="imprimirFechamento()">Imprimir / Salvar PDF</button>
+      </div>
+    </div>
+
+    <div id="relatorioFechamento"></div>
+  </section>
+  <!-- ===================== GERADOR DE CONTRATOS ===================== -->
+  <section id="tela-gerador" class="tela">
+
+    <!-- CONTRATOS PENDENTES DO FORMS -->
+    <div class="form-section" id="secao-pendentes">
+      <h2 style="justify-content:space-between;">
+        <span style="display:flex;align-items:center;gap:8px;"><span class="num">⚡</span>Contratos pendentes do Google Forms</span>
+        <button class="btn btn-outline" style="font-size:11px;padding:5px 12px;" onclick="carregarPendentes()">Atualizar</button>
+      </h2>
+      <div id="pendentes-status" style="font-size:12px;color:var(--cinza-texto);margin-bottom:10px;">
+        Configure a URL do Apps Script no botão "Atualizar planilha" para carregar os formulários enviados.
+      </div>
+      <div id="pendentes-lista"></div>
+    </div>
+
+    <div class="tipo-selector">
+      <div class="tipo-card ativo" id="gcard-anunciante" onclick="gSelecionarTipo('anunciante')">
+        <div class="icone">📺</div>
+        <h3>Contrato de Anunciante</h3>
+        <p>Para quem anuncia nos televisores. Veiculação de publicidade e patrocínios.</p>
+      </div>
+      <div class="tipo-card" id="gcard-parceiro" onclick="gSelecionarTipo('parceiro')">
+        <div class="icone">🏪</div>
+        <h3>Contrato de Parceiro / Local</h3>
+        <p>Para o estabelecimento que recebe a TV. Prestação de serviços e repasse financeiro.</p>
+      </div>
+    </div>
+
+    <!-- FORM ANUNCIANTE -->
+    <!-- FORM ANUNCIANTE -->
+    <div id="gform-anunciante">
+      <div class="form-section">
+        <h2><span class="num">1</span>Dados do Contratante (Anunciante)</h2>
+        <div class="form-grid">
+          <div class="gcampo span2"><label>Razão Social / Nome Completo *</label><input type="text" id="a_razao" placeholder="Ex: Pizzaria Tio Gusto Ltda"></div>
+          <div class="gcampo"><label>CNPJ / CPF *</label><input type="text" id="a_cnpj" placeholder="00.000.000/0001-00"></div>
+          <div class="gcampo"><label>Tipo</label><select id="a_tipo"><option value="pessoa jurídica">Pessoa Jurídica</option><option value="pessoa física">Pessoa Física</option></select></div>
+          <div class="gcampo"><label>Telefone</label><input type="text" id="a_telefone" placeholder="(12) 99999-9999"></div>
+          <div class="gcampo"><label>E-mail</label><input type="email" id="a_email" placeholder="contato@empresa.com.br"></div>
+        </div>
+        <div class="form-grid" style="margin-top:10px;">
+          <div class="gcampo span2"><label>Logradouro (Rua/Av.) *</label><input type="text" id="a_rua" placeholder="Ex: Rua das Flores"></div>
+          <div class="gcampo"><label>Número *</label><input type="text" id="a_numero" placeholder="101"></div>
+          <div class="gcampo"><label>Complemento</label><input type="text" id="a_complemento" placeholder="Sala 2, Casa B"></div>
+          <div class="gcampo"><label>Bairro *</label><input type="text" id="a_bairro" placeholder="Ex: Centro"></div>
+          <div class="gcampo"><label>Cidade *</label><input type="text" id="a_cidade" placeholder="Ex: Pindamonhangaba"></div>
+          <div class="gcampo"><label>UF</label><select id="a_uf">
+            <option value="SP" selected>SP</option><option value="AC">AC</option><option value="AL">AL</option><option value="AM">AM</option><option value="BA">BA</option><option value="CE">CE</option><option value="DF">DF</option><option value="ES">ES</option><option value="GO">GO</option><option value="MA">MA</option><option value="MG">MG</option><option value="MS">MS</option><option value="MT">MT</option><option value="PA">PA</option><option value="PB">PB</option><option value="PE">PE</option><option value="PI">PI</option><option value="PR">PR</option><option value="RJ">RJ</option><option value="RN">RN</option><option value="RO">RO</option><option value="RR">RR</option><option value="RS">RS</option><option value="SC">SC</option><option value="SE">SE</option><option value="TO">TO</option>
+          </select></div>
+          <div class="gcampo"><label>CEP</label><input type="text" id="a_cep" placeholder="12401-470"></div>
+        </div>
+        <div class="form-grid" style="margin-top:10px;">
+          <div class="gcampo"><label>Representante Legal *</label><input type="text" id="a_representante" placeholder="Nome completo do representante"></div>
+          <div class="gcampo"><label>CPF do Representante *</label><input type="text" id="a_rep_cpf" placeholder="000.000.000-00"></div>
+        </div>
+      </div>
+      <div class="form-section">
+        <h2><span class="num">2</span>Locais de Veiculação</h2>
+        <div id="g-locais-checkboxes" style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px;"></div>
+        <div class="locais-lista" id="g-locais-lista"></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn-add-local" onclick="gAdicionarLocal()">+ Adicionar local manualmente</button>
+          <button class="btn-add-local" onclick="carregarLocaisFormManual(true)">🔄 Recarregar locais da planilha</button>
+        </div>
+      </div>
+      <div class="form-section">
+        <h2><span class="num">3</span>Condições Comerciais</h2>
+        <div class="form-grid">
+          <div class="gcampo"><label>Plano</label><select id="a_plano"><option value="Semestral — 6 meses">Semestral — 6 meses</option><option value="Anual — 12 meses" selected>Anual — 12 meses</option></select></div>
+          <div class="gcampo"><label>Forma de Pagamento</label><select id="a_forma_pag"><option value="PIX">PIX</option><option value="cartão de crédito">Cartão de crédito</option><option value="boleto bancário">Boleto bancário</option></select></div>
+          <div class="gcampo"><label>Prazo (meses)</label><input type="number" id="a_prazo" value="12" min="1" oninput="document.getElementById('a_prazo_ext').value=quantidadePorExtenso(this.value)"></div>
+          <div class="gcampo"><label>Prazo por extenso</label><input type="text" id="a_prazo_ext" placeholder="doze"></div>
+          <div class="gcampo"><label>Valor mensal (R$)</label><input type="text" id="a_valor" placeholder="Ex: 350,00" oninput="document.getElementById('a_valor_ext').value=valorPorExtenso(this.value)"></div>
+          <div class="gcampo"><label>Valor por extenso</label><input type="text" id="a_valor_ext" placeholder="trezentos e cinquenta reais"></div>
+          <div class="gcampo"><label>Dia de vencimento</label><input type="number" id="a_vencimento" value="5" min="1" max="31" oninput="document.getElementById('a_vencimento_ext').value=numeroPorExtenso(this.value)"></div>
+          <div class="gcampo"><label>Vencimento por extenso</label><input type="text" id="a_vencimento_ext" placeholder="cinco"></div>
+        </div>
+      </div>
+      <div class="form-section">
+        <h2><span class="num">4</span>Data de Assinatura</h2>
+        <div class="form-grid">
+          <div class="gcampo"><label>Data</label><input type="date" id="a_data" onchange="preencherDataAssinatura('a')"></div>
+          <div class="gcampo"><label>Dia</label><input type="number" id="a_dia" min="1" max="31" placeholder="15"></div>
+          <div class="gcampo"><label>Mês por extenso</label><input type="text" id="a_mes" placeholder="julho"></div>
+          <div class="gcampo"><label>Ano</label><input type="number" id="a_ano" value="2026"></div>
+        </div>
+      </div>
+      <div class="form-section">
+        <h2><span class="num">5</span>Testemunhas</h2>
+        <div class="form-grid">
+          <div class="gcampo"><label>Testemunha 1 — Nome</label><input type="text" id="a_t1_nome"></div>
+          <div class="gcampo"><label>Testemunha 1 — RG</label><input type="text" id="a_t1_rg"></div>
+          <div class="gcampo"><label>Testemunha 1 — CPF</label><input type="text" id="a_t1_cpf"></div>
+          <div class="gcampo"><label>Testemunha 2 — Nome</label><input type="text" id="a_t2_nome"></div>
+          <div class="gcampo"><label>Testemunha 2 — RG</label><input type="text" id="a_t2_rg"></div>
+          <div class="gcampo"><label>Testemunha 2 — CPF</label><input type="text" id="a_t2_cpf"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FORM PARCEIRO -->
+    <div id="gform-parceiro" style="display:none;">
+      <div class="form-section">
+        <h2><span class="num">1</span>Dados do Contratante (Parceiro / Local)</h2>
+        <div class="form-grid">
+          <div class="gcampo span2"><label>Razão Social / Nome do Estabelecimento *</label><input type="text" id="p_razao" placeholder="Ex: Academia Moviment Moreira"></div>
+          <div class="gcampo"><label>CNPJ / CPF *</label><input type="text" id="p_cnpj" placeholder="00.000.000/0001-00"></div>
+          <div class="gcampo"><label>Tipo</label><select id="p_tipo"><option value="pessoa jurídica">Pessoa Jurídica</option><option value="pessoa física">Pessoa Física</option></select></div>
+          <div class="gcampo"><label>Telefone</label><input type="text" id="p_telefone" placeholder="(12) 99999-9999"></div>
+          <div class="gcampo"><label>E-mail</label><input type="email" id="p_email" placeholder="contato@empresa.com.br"></div>
+        </div>
+        <div class="form-grid" style="margin-top:10px;">
+          <div class="gcampo span2"><label>Logradouro (Rua/Av.) *</label><input type="text" id="p_rua" placeholder="Ex: Rua das Flores"></div>
+          <div class="gcampo"><label>Número *</label><input type="text" id="p_numero" placeholder="101"></div>
+          <div class="gcampo"><label>Complemento</label><input type="text" id="p_complemento" placeholder="Sala 2, Casa B"></div>
+          <div class="gcampo"><label>Bairro *</label><input type="text" id="p_bairro" placeholder="Ex: Centro"></div>
+          <div class="gcampo"><label>Cidade *</label><input type="text" id="p_cidade" placeholder="Ex: Pindamonhangaba"></div>
+          <div class="gcampo"><label>UF</label><select id="p_uf">
+            <option value="SP" selected>SP</option><option value="AC">AC</option><option value="AL">AL</option><option value="AM">AM</option><option value="BA">BA</option><option value="CE">CE</option><option value="DF">DF</option><option value="ES">ES</option><option value="GO">GO</option><option value="MA">MA</option><option value="MG">MG</option><option value="MS">MS</option><option value="MT">MT</option><option value="PA">PA</option><option value="PB">PB</option><option value="PE">PE</option><option value="PI">PI</option><option value="PR">PR</option><option value="RJ">RJ</option><option value="RN">RN</option><option value="RS">RS</option><option value="SC">SC</option><option value="SE">SE</option><option value="TO">TO</option>
+          </select></div>
+          <div class="gcampo"><label>CEP</label><input type="text" id="p_cep" placeholder="12401-470"></div>
+        </div>
+        <div class="form-grid" style="margin-top:10px;">
+          <div class="gcampo"><label>Representante Legal *</label><input type="text" id="p_representante" placeholder="Nome completo do representante"></div>
+          <div class="gcampo"><label>CPF do Representante *</label><input type="text" id="p_rep_cpf" placeholder="000.000.000-00"></div>
+        </div>
+      </div>
+      <div class="form-section">
+        <h2><span class="num">2</span>Equipamentos</h2>
+        <div class="form-grid">
+          <div class="gcampo"><label>Qtd. de televisores</label><input type="number" id="p_qtd_tv" value="1" min="1"></div>
+          <div class="gcampo"><label>Qtd. por extenso</label><input type="text" id="p_qtd_tv_ext" placeholder="Ex: um"></div>
+          <div class="gcampo"><label>Marca</label><input type="text" id="p_marca" placeholder="Ex: Samsung"></div>
+          <div class="gcampo"><label>Modelo</label><input type="text" id="p_modelo" placeholder="Ex: Smart TV 4K"></div>
+          <div class="gcampo"><label>Polegadas</label><input type="text" id="p_polegadas" placeholder="Ex: 50"></div>
+          <div class="gcampo"><label>Prazo retirada em rescisão (dias)</label><input type="number" id="p_prazo_retirada" value="7"></div>
+        </div>
+      </div>
+      <div class="form-section">
+        <h2><span class="num">3</span>Data de Assinatura</h2>
+        <div class="form-grid">
+          <div class="gcampo"><label>Data</label><input type="date" id="p_data" onchange="preencherDataAssinatura('p')"></div>
+          <div class="gcampo"><label>Dia</label><input type="number" id="p_dia" min="1" max="31" placeholder="15"></div>
+          <div class="gcampo"><label>Mês por extenso</label><input type="text" id="p_mes" placeholder="julho"></div>
+          <div class="gcampo"><label>Ano</label><input type="number" id="p_ano" value="2026"></div>
+        </div>
+      </div>
+      <div class="form-section">
+        <h2><span class="num">4</span>Testemunhas</h2>
+        <div class="form-grid">
+          <div class="gcampo"><label>Testemunha 1 — Nome</label><input type="text" id="p_t1_nome"></div>
+          <div class="gcampo"><label>Testemunha 1 — RG</label><input type="text" id="p_t1_rg"></div>
+          <div class="gcampo"><label>Testemunha 1 — CPF</label><input type="text" id="p_t1_cpf"></div>
+          <div class="gcampo"><label>Testemunha 2 — Nome</label><input type="text" id="p_t2_nome"></div>
+          <div class="gcampo"><label>Testemunha 2 — RG</label><input type="text" id="p_t2_rg"></div>
+          <div class="gcampo"><label>Testemunha 2 — CPF</label><input type="text" id="p_t2_cpf"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tela-gerador-acoes" style="display:flex;gap:12px;justify-content:flex-end;margin-top:8px;">
+      <button class="btn btn-outline" onclick="gLimpar()">Limpar</button>
+      <button class="btn" onclick="gGerarPreview()">Visualizar contrato</button>
+    </div>
+
+    <div id="g-preview" style="display:none;">
+      <div class="tela-gerador-acoes" style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px;margin-bottom:4px;">
+        <button class="btn btn-outline" onclick="document.getElementById('g-preview').style.display='none'">← Voltar e editar</button>
+        <button class="btn btn-secundario" onclick="imprimirSomenteContrato()">🖨️ Imprimir / Salvar PDF</button>
+      </div>
+      <div class="contrato-doc" id="g-contrato-output"></div>
+    </div>
+
+  </section>
+
+</main>
+
+<!-- ===== MODAL IMPORTAR ===== -->
+<div class="modal-bg" id="modalImport">
+  <div class="modal">
+    <h3>Atualizar planilha</h3>
+
+    <div style="background:#e8edfb; border-radius:8px; padding:12px 14px; margin-bottom:14px; border-left:3px solid var(--azul);">
+      <div style="font-size:12px; font-weight:700; color:var(--azul); margin-bottom:4px;">⚡ Sincronização automática via Apps Script</div>
+      <div style="font-size:11.5px; color:#22273a; line-height:1.6;">
+        Se você já configurou o Código.gs na planilha, cole a URL do Web App abaixo.
+        O painel vai buscar os dados automaticamente sempre que abrir — sem precisar fazer upload de arquivo.
+      </div>
+      <input type="text" id="urlAppsScript" placeholder="https://script.google.com/macros/s/.../exec"
+        style="width:100%; margin-top:10px; padding:9px 12px; border:1px solid var(--cinza-borda); border-radius:8px; font-size:12px;">
+      <button class="btn" onclick="salvarUrlAppsScript()" style="margin-top:8px; padding:8px 16px; font-size:12px;">Salvar e sincronizar</button>
+    </div>
+
+    <details style="margin-bottom:14px;">
+      <summary style="cursor:pointer; font-size:12px; color:var(--azul); font-weight:600;">Ou fazer upload manual do CSV</summary>
+      <p style="margin-top:10px; font-size:12px; color:#5a6478; line-height:1.6;">
+        No Google Sheets, clique na aba <strong>TODOS</strong> (lá embaixo) → <strong>Arquivo → Fazer download → Valores separados por vírgula (.csv)</strong>.
+        O Google baixa apenas a aba selecionada.
+      </p>
+      <input type="file" id="arquivoImport" accept=".csv,.xlsx" style="margin-bottom:6px; margin-top:6px;">
+      <p style="font-size:11px; color:#8993a8; margin-bottom:8px;">Aceita arquivo .csv ou .xlsx exportado da aba TODOS.</p>
+      <textarea id="linkCsv" placeholder="Ou cole aqui o link CSV publicado..." style="height:50px;"></textarea>
+    </details>
+
+    <div class="modal-acoes">
+      <button class="btn-outline btn" onclick="fecharModalImport()">Cancelar</button>
+      <button class="btn" onclick="importarDeLink()">Atualizar via arquivo/link</button>
+    </div>
+  </div>
+</div>
+
+<footer>
+  Painel TV Marketing — França Produções e Serviços Ltda · Gerado automaticamente a partir da planilha de controle
+</footer>
+
+<script>window.__LOGO_B64__ = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAyAAAAMgCAYAAADbcAZoAAAAtGVYSWZJSSoACAAAAAYAEgEDAAEAAAABAAAAGgEFAAEAAABWAAAAGwEFAAEAAABeAAAAKAEDAAEAAAACAAAAEwIDAAEAAAABAAAAaYcEAAEAAABmAAAAAAAAAGAAAAABAAAAYAAAAAEAAAAGAACQBwAEAAAAMDIxMAGRBwAEAAAAAQIDAACgBwAEAAAAMDEwMAGgAwABAAAA//8AAAKgBAABAAAAIAMAAAOgBAABAAAAIAMAAAAAAACRvww8AAAACXBIWXMAAA7EAAAOxAGVKw4bAAAGNmlUWHRYTUw6Y29tLmFkb2JlLnhtcAAAAAAAPD94cGFja2V0IGJlZ2luPSfvu78nIGlkPSdXNU0wTXBDZWhpSHpyZVN6TlRjemtjOWQnPz4KPHg6eG1wbWV0YSB4bWxuczp4PSdhZG9iZTpuczptZXRhLyc+CjxyZGY6UkRGIHhtbG5zOnJkZj0naHR0cDovL3d3dy53My5vcmcvMTk5OS8wMi8yMi1yZGYtc3ludGF4LW5zIyc+CgogPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9JycKICB4bWxuczpBdHRyaWI9J2h0dHA6Ly9ucy5hdHRyaWJ1dGlvbi5jb20vYWRzLzEuMC8nPgogIDxBdHRyaWI6QWRzPgogICA8cmRmOlNlcT4KICAgIDxyZGY6bGkgcmRmOnBhcnNlVHlwZT0nUmVzb3VyY2UnPgogICAgIDxBdHRyaWI6Q3JlYXRlZD4yMDI2LTA2LTI2PC9BdHRyaWI6Q3JlYXRlZD4KICAgICA8QXR0cmliOkRhdGE+eyZxdW90O2RvYyZxdW90OzomcXVvdDtEQUhFM1hTZk9zWSZxdW90OywmcXVvdDt1c2VyJnF1b3Q7OiZxdW90O1VBRTg3TnBKQV93JnF1b3Q7LCZxdW90O2JyYW5kJnF1b3Q7OiZxdW90O0JBRTg3Q2N5MjNrJnF1b3Q7fTwvQXR0cmliOkRhdGE+CiAgICAgPEF0dHJpYjpFeHRJZD4wNjZiYWFhYy0zODhkLTQ2YTktYTk0MS05ZTA2MjU4YjQ1MWQ8L0F0dHJpYjpFeHRJZD4KICAgICA8QXR0cmliOkZiSWQ+NTI1MjY1OTE0MTc5NTgwPC9BdHRyaWI6RmJJZD4KICAgICA8QXR0cmliOlRvdWNoVHlwZT4yPC9BdHRyaWI6VG91Y2hUeXBlPgogICAgPC9yZGY6bGk+CiAgIDwvcmRmOlNlcT4KICA8L0F0dHJpYjpBZHM+CiA8L3JkZjpEZXNjcmlwdGlvbj4KCiA8cmRmOkRlc2NyaXB0aW9uIHJkZjphYm91dD0nJwogIHhtbG5zOmRjPSdodHRwOi8vcHVybC5vcmcvZGMvZWxlbWVudHMvMS4xLyc+CiAgPGRjOnRpdGxlPgogICA8cmRmOkFsdD4KICAgIDxyZGY6bGkgeG1sOmxhbmc9J3gtZGVmYXVsdCc+QSBjaXJjdWxhw6fDo28gbcOpZGlhIGRpw6FyaWEgZGUgcGVzc29hcyBub3MgcG9udG9zIG9uZGUgYXMgVFZzIGVzdMOjbyBpbnN0YWxhZGFzIMOpIGRlIGFwcm94aW1hZGFtZW50ZSA0LjA1MCBwZXNzb2FzIHBvciBkaWEsIGdhcmFudGluZG8gYW1wbG8gYWxjYW5jZSBkYXMgaW5mb3JtYcOnw7VlcyBkaXZ1bGdhZGFzLiBDb25zaWRlcmFuZG8gdW1hIG3DqWRpYSBkZSAyNCBkaWFzIHBvciBtw6pzLCBpc3NvIHJlcHJlc2VudGEgY2VyY2EgZGUgOTcuMjAwIC0gMTwvcmRmOmxpPgogICA8L3JkZjpBbHQ+CiAgPC9kYzp0aXRsZT4KIDwvcmRmOkRlc2NyaXB0aW9uPgoKIDxyZGY6RGVzY3JpcHRpb24gcmRmOmFib3V0PScnCiAgeG1sbnM6cGRmPSdodHRwOi8vbnMuYWRvYmUuY29tL3BkZi8xLjMvJz4KICA8cGRmOkF1dGhvcj5icnVubyBmcmFuY2E8L3BkZjpBdXRob3I+CiA8L3JkZjpEZXNjcmlwdGlvbj4KCiA8cmRmOkRlc2NyaXB0aW9uIHJkZjphYm91dD0nJwogIHhtbG5zOnhtcD0naHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wLyc+CiAgPHhtcDpDcmVhdG9yVG9vbD5DYW52YSBkb2M9REFIRTNYU2ZPc1kgdXNlcj1VQUU4N05wSkFfdyBicmFuZD1CQUU4N0NjeTIzazwveG1wOkNyZWF0b3JUb29sPgogPC9yZGY6RGVzY3JpcHRpb24+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AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAG6//DyE09hlu6Z8hAAAAAElFTkSuQmCC";</script>
+<script id="dados-iniciais-json" type="application/json">[{"tv": "BARBEARIA RAL", "nome": "DR VITÓRIA GOMES", "segmento": "ESTETICA E ODONTOLOGIA", "data_inicio": "2026-01-12", "tempo_contrato": "Anual", "data_final": "2027-01-12", "forma_pag": "CORTESIA", "valor_mensal": 40}, {"tv": "BARBEARIA RAL", "nome": "VALE CAR", "segmento": "AR CONDICIONADO AUTOMOTIVO", "data_inicio": "2026-01-27", "tempo_contrato": "Anual", "data_final": "2027-01-27", "forma_pag": "CARTÃO", "valor_mensal": 40.5}, {"tv": "BARBEARIA RAL", "nome": "BARBEARIA RAL", "segmento": "BARBEARIA", "data_inicio": "2026-02-03", "tempo_contrato": "Anual", "data_final": "2027-02-03", "forma_pag": "CORTESIA", "valor_mensal": 0}, {"tv": "BARBEARIA RAL", "nome": "PIZZARIA TIO GUSTO", "segmento": "PIZZARIA", "data_inicio": "2026-02-10", "tempo_contrato": "Anual", "data_final": "2027-02-10", "forma_pag": "PIX MENSAL", "valor_mensal": 45}, {"tv": "BARBEARIA RAL", "nome": "FERNANDA SOUZA", "segmento": "AULA DE INGLES", "data_inicio": "2026-03-24", "tempo_contrato": "Anual", "data_final": "2027-03-24", "forma_pag": "PERMUTA", "valor_mensal": 45}, {"tv": "BOX GARRA", "nome": "PIZZARIA TIO GUSTO", "segmento": "PIZZARIA", "data_inicio": "2026-02-10", "tempo_contrato": "Anual", "data_final": "2027-02-10", "forma_pag": "PIX MENSAL", "valor_mensal": 45}, {"tv": "BOX GARRA", "nome": "ROCARDO GOLÇALVES", "segmento": "PROJETOS E ARQUITETURA", "data_inicio": "2026-03-04", "tempo_contrato": "Anual", "data_final": "2027-03-04", "forma_pag": "CARTÃO", "valor_mensal": 45}, {"tv": "BOX GARRA", "nome": "MARIANA GODOY", "segmento": "ESTETICA E ODONTOLOGIA", "data_inicio": "2026-02-26", "tempo_contrato": "Anual", "data_final": "2027-02-26", "forma_pag": "PIX MENSAL", "valor_mensal": 45}, {"tv": "BOX GARRA", "nome": "FERNANDA SOUZA", "segmento": "AULA DE INGLES", "data_inicio": "2026-03-24", "tempo_contrato": "Anual", "data_final": "2027-03-24", "forma_pag": "PERMUTA", "valor_mensal": 45}, {"tv": "CLINICA VIGORÁ", "nome": "DR VITÓRIA GOMES", "segmento": "ESTETICA E ODONTOLOGIA", "data_inicio": "2026-01-07", "tempo_contrato": "Anual", "data_final": "2027-01-07", "forma_pag": "CORTESIA", "valor_mensal": 0}, {"tv": "CLINICA VIGORÁ", "nome": "DR ANA BESSA", "segmento": "ODONTO PEDIATRA", "data_inicio": "2026-01-30", "tempo_contrato": "Anual", "data_final": "2027-01-30", "forma_pag": "PG ANO TODO", "valor_mensal": 30}, {"tv": "CLINICA VIGORÁ", "nome": "DR VIVIANE", "segmento": "IMPLATANTE DENTARIO", "data_inicio": "2026-01-03", "tempo_contrato": "Anual", "data_final": "2027-01-03", "forma_pag": "CARTÃO", "valor_mensal": 30}, {"tv": "CLINICA VIGORÁ", "nome": "DR ADRIANA", "segmento": "ESTETICA", "data_inicio": "2026-03-09", "tempo_contrato": "Anual", "data_final": "2027-03-09", "forma_pag": "PIX MENSAL", "valor_mensal": 30}, {"tv": "CLINICA VIGORÁ", "nome": "DR FRANCINE", "segmento": "ORTODONTIA", "data_inicio": "2026-03-20", "tempo_contrato": "Semestral", "data_final": "2026-09-20", "forma_pag": "PG COMPLETO", "valor_mensal": 30}, {"tv": "CLINICA VIGORÁ", "nome": "FERNANDA SOUZA", "segmento": "AULA DE INGLES", "data_inicio": "2026-03-24", "tempo_contrato": "Anual", "data_final": "2027-03-24", "forma_pag": "PERMUTA", "valor_mensal": 45}, {"tv": "MOVIMENT MOREIRA 01", "nome": "DR VITÓRIA GOMES", "segmento": "ESTETICA E ODONTOLOGIA", "data_inicio": "2026-01-20", "tempo_contrato": "Anual", "data_final": "2027-12-20", "forma_pag": "CORTESIA", "valor_mensal": 40}, {"tv": "MOVIMENT MOREIRA 01", "nome": "VALE CAR", "segmento": "AR CONDICIONADO AUTOMOTIVO", "data_inicio": "2026-01-27", "tempo_contrato": "Anual", "data_final": "2027-01-27", "forma_pag": "CARTÃO", "valor_mensal": 82.33}, {"tv": "MOVIMENT MOREIRA 01", "nome": "JULIANA BOUTIQUE", "segmento": "ROUPAS FITNES", "data_inicio": "2026-02-04", "tempo_contrato": "Semestral", "data_final": "2026-08-04", "forma_pag": "CARTÃO", "valor_mensal": 100}, {"tv": "MOVIMENT MOREIRA 01", "nome": "DIVINUS MOTEL", "segmento": "MOTEL", "data_inicio": "2026-02-25", "tempo_contrato": "Anual", "data_final": "2027-02-25", "forma_pag": "PIX MENSAL", "valor_mensal": 91.66}, {"tv": "MOVIMENT MOREIRA 01", "nome": "AGROPET", "segmento": "LOJA DE RAÇÃO", "data_inicio": "2026-03-02", "tempo_contrato": "Anual", "data_final": "2027-03-02", "forma_pag": "PIX MENSAL", "valor_mensal": 83.33}, {"tv": "MOVIMENT MOREIRA 01", "nome": "FERNANDA SOUZA", "segmento": "AULA DE INGLES", "data_inicio": "2026-03-24", "tempo_contrato": "Anual", "data_final": "2027-03-24", "forma_pag": "PERMUTA", "valor_mensal": 91.66}, {"tv": "MOVIMENT MOREIRA 02", "nome": "DR VITÓRIA GOMES", "segmento": "ESTETICA E ODONTOLOGIA", "data_inicio": "2026-01-20", "tempo_contrato": "Anual", "data_final": "2027-12-20", "forma_pag": "PIX MENSAL", "valor_mensal": 40}, {"tv": "MOVIMENT MOREIRA 02", "nome": "VALE CAR", "segmento": "AR CONDICIONADO AUTOMOTIVO", "data_inicio": "2026-01-27", "tempo_contrato": "Anual", "data_final": "2027-01-27", "forma_pag": "CARTÃO", "valor_mensal": 82.33}, {"tv": "MOVIMENT MOREIRA 02", "nome": "JULIANA BOUTIQUE", "segmento": "ROUPAS FITNES", "data_inicio": "2026-02-04", "tempo_contrato": "Semestral", "data_final": "2026-08-04", "forma_pag": "CARTÃO", "valor_mensal": 100}, {"tv": "MOVIMENT MOREIRA 02", "nome": "DIVINUS MOTEL", "segmento": "MOTEL", "data_inicio": "2026-02-25", "tempo_contrato": "Anual", "data_final": "2027-02-25", "forma_pag": "PIX MENSAL", "valor_mensal": 91.66}, {"tv": "MOVIMENT MOREIRA 02", "nome": "AGROPET", "segmento": "LOJA DE RAÇÃO", "data_inicio": "2026-03-02", "tempo_contrato": "Anual", "data_final": "2027-03-02", "forma_pag": "PIX MENSAL", "valor_mensal": 83.33}, {"tv": "MOVIMENT MOREIRA 02", "nome": "FERNANDA SOUZA", "segmento": "AULA DE INGLES", "data_inicio": "2026-03-24", "tempo_contrato": "Anual", "data_final": "2027-03-24", "forma_pag": "PERMUTA", "valor_mensal": 91.66}, {"tv": "MOVIMENT MOREIRA 03", "nome": "DR VITÓRIA GOMES", "segmento": "ESTETICA E ODONTOLOGIA", "data_inicio": "2026-01-20", "tempo_contrato": "Anual", "data_final": "2027-12-20", "forma_pag": "CORTESIA", "valor_mensal": 40}, {"tv": "MOVIMENT MOREIRA 03", "nome": "VALE CAR", "segmento": "AR CONDICIONADO AUTOMOTIVO", "data_inicio": "2026-01-27", "tempo_contrato": "Anual", "data_final": "2027-01-27", "forma_pag": "CARTÃO", "valor_mensal": 82.33}, {"tv": "MOVIMENT MOREIRA 03", "nome": "JULIANA BOUTIQUE", "segmento": "ROUPAS FITNES", "data_inicio": "2026-02-04", "tempo_contrato": "Semestral", "data_final": "2026-08-04", "forma_pag": "CARTÃO", "valor_mensal": 100}, {"tv": "MOVIMENT MOREIRA 03", "nome": "DIVINUS MOTEL", "segmento": "MOTEL", "data_inicio": "2026-02-25", "tempo_contrato": "Anual", "data_final": "2027-02-25", "forma_pag": "PIX MENSAL", "valor_mensal": 91.66}, {"tv": "MOVIMENT MOREIRA 03", "nome": "AGROPET", "segmento": "LOJA DE RAÇÃO", "data_inicio": "2026-03-02", "tempo_contrato": "Anual", "data_final": "2027-03-02", "forma_pag": "PIX MENSAL", "valor_mensal": 83.33}, {"tv": "MOVIMENT MOREIRA 03", "nome": "FERNANDA SOUZA", "segmento": "AULA DE INGLES", "data_inicio": "2026-03-24", "tempo_contrato": "Anual", "data_final": "2027-03-24", "forma_pag": "PERMUTA", "valor_mensal": 91.66}, {"tv": "MOVIMENT SANTANA", "nome": "DR VITÓRIA GOMES", "segmento": "ESTETICA E ODONTOLOGIA", "data_inicio": "2026-01-12", "tempo_contrato": "Anual", "data_final": "2027-01-12", "forma_pag": "CORTESIA", "valor_mensal": 40}, {"tv": "MOVIMENT SANTANA", "nome": "VALE CAR", "segmento": "AR CONDICIONADO E MANUTENÇÃO", "data_inicio": "2026-01-27", "tempo_contrato": "Anual", "data_final": "2027-01-27", "forma_pag": "CARTÃO", "valor_mensal": 40.5}, {"tv": "MOVIMENT SANTANA", "nome": "BARBEARIA RAL", "segmento": "BARBEARIA", "data_inicio": "2026-02-03", "tempo_contrato": "Anual", "data_final": "2027-02-03", "forma_pag": "CARTÃO", "valor_mensal": 40}, {"tv": "MOVIMENT SANTANA", "nome": "JULIANA BOUTIQUE", "segmento": "ROUPAS FITNES", "data_inicio": "2026-02-04", "tempo_contrato": "Semestral", "data_final": "2026-08-04", "forma_pag": "CARTÃO", "valor_mensal": 55}, {"tv": "MOVIMENT SANTANA", "nome": "PIZZARIA TIO GUSTO", "segmento": "PIZZARIA", "data_inicio": "2026-02-10", "tempo_contrato": "Anual", "data_final": "2027-02-10", "forma_pag": "PIX MENSAL", "valor_mensal": 45}, {"tv": "MOVIMENT SANTANA", "nome": "DIVINOS MOTEL", "segmento": "MOTEL", "data_inicio": "2026-02-25", "tempo_contrato": "Anual", "data_final": "2027-02-25", "forma_pag": "PIX MENSAL", "valor_mensal": 45}, {"tv": "MOVIMENT SANTANA", "nome": "ARTE DELA", "segmento": "GARRAFAS PERSONALIZADAS", "data_inicio": "2026-02-23", "tempo_contrato": "Trimestral", "data_final": "2026-05-23", "forma_pag": "PIX MENSAL", "valor_mensal": 65}, {"tv": "MOVIMENT SANTANA", "nome": "FERNANDA SOUZA", "segmento": "AULA DE INGLES", "data_inicio": "2026-03-24", "tempo_contrato": "Anual", "data_final": "2027-03-24", "forma_pag": "PERMUTA", "valor_mensal": 45}, {"tv": "SHOW DE BOLA", "nome": "DR VITÓRIA GOMES", "segmento": "ESTETICA E ODONTOLOGIA", "data_inicio": "2026-01-07", "tempo_contrato": "Anual", "data_final": "2027-01-07", "forma_pag": "CORTESIA", "valor_mensal": 0}, {"tv": "SHOW DE BOLA", "nome": "DR MARIA VITÓRIA", "segmento": "OFTALMOLOGIA", "data_inicio": "2026-01-09", "tempo_contrato": "Anual", "data_final": "2027-01-09", "forma_pag": "CORTESIA", "valor_mensal": 0}, {"tv": "SHOW DE BOLA", "nome": "VALE CAR", "segmento": "AR CONDICIONADO AUTOMOTIVO", "data_inicio": "2026-01-27", "tempo_contrato": "Anual", "data_final": "2027-01-27", "forma_pag": "CARTÃO", "valor_mensal": 42.52}, {"tv": "SHOW DE BOLA", "nome": "BARBEARIA RAL", "segmento": "BARBEARIA", "data_inicio": "2026-02-03", "tempo_contrato": "Anual", "data_final": "2027-02-03", "forma_pag": "CARTÃO", "valor_mensal": 40}, {"tv": "SHOW DE BOLA", "nome": "PODIUM OFICINA", "segmento": "MANUTEÇÃO MECANICA", "data_inicio": "2026-02-04", "tempo_contrato": "Semestral", "data_final": "2026-08-04", "forma_pag": "CARTÃO", "valor_mensal": 55}, {"tv": "SHOW DE BOLA", "nome": "PIZZARIA TIO GUSTO", "segmento": "PIZZARIA", "data_inicio": "2026-02-10", "tempo_contrato": "Anual", "data_final": "2027-02-10", "forma_pag": "PIX MENSAL", "valor_mensal": 45}, {"tv": "UNICARD", "nome": "DR VITÓRIA GOMES", "segmento": "ESTETICA E ODONTOLOGIA", "data_inicio": "2026-01-20", "tempo_contrato": "Anual", "data_final": "2027-01-20", "forma_pag": "CORTESIA", "valor_mensal": 40}, {"tv": "UNICARD", "nome": "AKS", "segmento": "MATERIAIS ELETRICOS", "data_inicio": "2026-02-23", "tempo_contrato": "Anual", "data_final": "2027-02-23", "forma_pag": "PIX MENSAL", "valor_mensal": 45}, {"tv": "UNICARD", "nome": "VALE CAR", "segmento": "AR CONDICIONADO AUTOMOTIVO", "data_inicio": "2026-01-27", "tempo_contrato": "Anual", "data_final": "2027-01-27", "forma_pag": "CARTÃO", "valor_mensal": 40.5}, {"tv": "UNICARD", "nome": "BARBEARIA RAL", "segmento": "BARBEARIA", "data_inicio": "2026-02-03", "tempo_contrato": "Anual", "data_final": "2027-02-03", "forma_pag": "CARTÃO", "valor_mensal": 40}, {"tv": "UNICARD", "nome": "PIZZARIA TIO GUSTO", "segmento": "PIZZARIA", "data_inicio": "2026-02-10", "tempo_contrato": "Anual", "data_final": "2027-02-10", "forma_pag": "PIX MENSAL", "valor_mensal": 45}, {"tv": "UNICARD", "nome": "ESQUADRIA PINDA", "segmento": "ESQUADRIA E VIDROS", "data_inicio": "2026-02-26", "tempo_contrato": "Semestral", "data_final": "2026-10-26", "forma_pag": "CARTÃO", "valor_mensal": 55}, {"tv": "UNICARD", "nome": "ROCARDO GOLÇALVES", "segmento": "PROJETOS E ARQUITETURA", "data_inicio": "2026-03-04", "tempo_contrato": "Anual", "data_final": "2027-03-04", "forma_pag": "CARTÃO", "valor_mensal": 45}, {"tv": "UNICARD", "nome": "FERNANDA SOUZA", "segmento": "AULA DE INGLES", "data_inicio": "2026-03-24", "tempo_contrato": "Anual", "data_final": "2027-03-24", "forma_pag": "PERMUTA", "valor_mensal": 45}, {"tv": "UNICARD", "nome": "DR ADRIANA", "segmento": "ESTETICA", "data_inicio": "2026-05-20", "tempo_contrato": "Anual", "data_final": "2026-07-20", "forma_pag": "PIX MENSAL", "valor_mensal": 55}, {"tv": "BOX GARRA", "nome": "DR ADRIANA", "segmento": "ESTETICA", "data_inicio": "2026-05-20", "tempo_contrato": "Anual", "data_final": "2026-07-20", "forma_pag": "PIX MENSAL", "valor_mensal": 55}, {"tv": "SHOW DE BOLA", "nome": "PREFEITURA", "segmento": "PREFEITURA", "data_inicio": "2026-05-10", "tempo_contrato": "Mensal", "data_final": "2026-06-10", "forma_pag": "PIX MENSAL", "valor_mensal": 55}, {"tv": "BARBEARIA RAL", "nome": "PREFEITURA", "segmento": "PREFEITURA", "data_inicio": "2026-05-10", "tempo_contrato": "Mensal", "data_final": "2026-06-10", "forma_pag": "PIX MENSAL", "valor_mensal": 55}, {"tv": "MOVIMENT MOREIRA 01", "nome": "PREFEITURA", "segmento": "PREFEITURA", "data_inicio": "2026-05-10", "tempo_contrato": "Mensal", "data_final": "2026-06-10", "forma_pag": "PIX MENSAL", "valor_mensal": 91.66}, {"tv": "MOVIMENT MOREIRA 02", "nome": "PREFEITURA", "segmento": "PREFEITURA", "data_inicio": "2026-05-10", "tempo_contrato": "Mensal", "data_final": "2026-06-10", "forma_pag": "PIX MENSAL", "valor_mensal": 91.66}, {"tv": "MOVIMENT MOREIRA 03", "nome": "PREFEITURA", "segmento": "PREFEITURA", "data_inicio": "2026-05-10", "tempo_contrato": "Mensal", "data_final": "2026-06-10", "forma_pag": "PIX MENSAL", "valor_mensal": 91.66}, {"tv": "MOVIMENT SANTANA", "nome": "PREFEITURA", "segmento": "PREFEITURA", "data_inicio": "2026-05-10", "tempo_contrato": "Mensal", "data_final": "2026-06-10", "forma_pag": "PIX MENSAL", "valor_mensal": 55}, {"tv": "UNICARD", "nome": "PREFEITURA", "segmento": "PREFEITURA", "data_inicio": "2026-05-10", "tempo_contrato": "Mensal", "data_final": "2026-06-10", "forma_pag": "PIX MENSAL", "valor_mensal": 55}, {"tv": "BOX GARRA", "nome": "PREFEITURA", "segmento": "PREFEITURA", "data_inicio": "2026-05-10", "tempo_contrato": "Mensal", "data_final": "2026-06-10", "forma_pag": "PIX MENSAL", "valor_mensal": 55}]</script>
+<script>/* ===================== ESTADO ===================== */
+let DADOS = [];
+const PAGAS = ['PIX MENSAL','CARTÃO','CARTAO','PG ANO TODO','PG COMPLETO']; // formas que geram entrada de caixa
+const COMISSAO_PCT = 0.30;
+// TVs sem comissão — começa com Vigorá e Show de Bola (parentes)
+// Pode ser alterado pelo usuário em tempo real pelo seletor interativo
+let TVS_SEM_COMISSAO = ['CLINICA VIGORÁ', 'SHOW DE BOLA'];
+const URL_APPS_SCRIPT = 'https://script.google.com/macros/s/AKfycbyFxSASn2TmyDbFMx3IDCktS_07D7NEIqSaI_umlnD8wpWpu2YjmeHJO-8CWNjEihY11g/exec';
+const URL_CSV_PADRAO = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR8sGg12sY0zVGT2L37WMHisbVynhhq9FaR83TT-izYauGSbVHT7wqwEQkhZ2pogg/pub?gid=944384512&single=true&output=csv';
+
+function carregarDadosIniciais(){
+  try{
+    const el = document.getElementById('dados-iniciais-json');
+    const raw = JSON.parse(el.textContent);
+    DADOS = raw.map((r,i)=>({...r, id:i+1}));
+    window.__qtdOriginal = DADOS.length;
+  }catch(e){
+    console.error('Erro ao carregar dados iniciais', e);
+    DADOS = [];
+  }
+}
+
+async function buscarDadosAppsScript(){
+  if(!URL_APPS_SCRIPT){
+    mostrarDataBaseCarregada();
+    return;
+  }
+  const status = document.getElementById('statusSync');
+  if(status) status.textContent = '🔄 Sincronizando com a planilha...';
+  try{
+    const resp = await fetch(URL_APPS_SCRIPT);
+    const json = await resp.json();
+    if(json.status !== 'ok') throw new Error(json.mensagem || 'Resposta inválida');
+    DADOS = json.dados.map((r,i)=>({...r, id:i+1}));
+    window.__qtdOriginal = DADOS.length;
+    popularSeletorTV();
+    renderTudo();
+    if(status) status.textContent = `✅ ${DADOS.length} contratos sincronizados com a planilha às ${new Date().toLocaleTimeString('pt-BR')}`;
+  }catch(e){
+    console.warn('Apps Script indisponível, usando dados embutidos.', e);
+    mostrarDataBaseCarregada();
+  }
+}
+
+function ehPago(formaPag){
+  if(!formaPag) return false;
+  const f = formaPag.toUpperCase().trim();
+  return PAGAS.some(p => f.includes(p)) ;
+}
+
+function parseData(str){
+  if(!str) return null;
+  const s = String(str).trim();
+  if(!s) return null;
+  // AAAA-MM-DD (formato principal)
+  if(/^\d{4}-\d{2}-\d{2}/.test(s)){
+    const [y,m,d] = s.substring(0,10).split('-').map(Number);
+    return new Date(y, m-1, d);
+  }
+  // DD/MM/AAAA
+  if(/^\d{2}\/\d{2}\/\d{4}/.test(s)){
+    const [d,m,y] = s.split('/').map(Number);
+    return new Date(y, m-1, d);
+  }
+  // M/D/AAAA (formato americano do Google Sheets)
+  if(/^\d{1,2}\/\d{1,2}\/\d{4}/.test(s)){
+    const [m,d,y] = s.split('/').map(Number);
+    return new Date(y, m-1, d);
+  }
+  // Tenta Date nativo como último recurso
+  const dt = new Date(s);
+  return isNaN(dt.getTime()) ? null : dt;
+}
+
+function fmtData(date){
+  if(!date) return '-';
+  const d = String(date.getDate()).padStart(2,'0');
+  const m = String(date.getMonth()+1).padStart(2,'0');
+  const y = date.getFullYear();
+  return `${d}/${m}/${y}`;
+}
+
+function fmtMoeda(v){
+  return (v||0).toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+}
+
+function diasEntre(d1,d2){
+  return Math.round((d2-d1)/(1000*60*60*24));
+}
+
+/* ===================== NAVEGAÇÃO ===================== */
+function irPara(tela){
+  document.querySelectorAll('.tela').forEach(t=>t.classList.remove('ativa'));
+  document.getElementById('tela-'+tela).classList.add('ativa');
+  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('ativo'));
+  document.querySelector(`nav button[data-tela="${tela}"]`).classList.add('ativo');
+  if(tela === 'gerador') carregarPendentes();
+}
+
+function inicializarPainel(){
+  carregarDadosIniciais();
+  document.getElementById('logoImg').src = window.__LOGO_B64__ || '';
+
+  document.querySelectorAll('nav button').forEach(b=>{
+    b.addEventListener('click', ()=> irPara(b.dataset.tela));
+  });
+
+  document.getElementById('buscaVenc').addEventListener('input', renderVencimentos);
+  document.getElementById('filtroVencStatus').addEventListener('change', renderVencimentos);
+  document.getElementById('buscaContratos').addEventListener('input', renderContratos);
+  document.getElementById('filtroTV').addEventListener('change', renderContratos);
+  document.getElementById('filtroPag').addEventListener('change', renderContratos);
+
+  // Quando rodando via file://, limpa URL salva para evitar erro de conexão
+  if(window.location.protocol === 'file:'){
+    try{ localStorage.removeItem('tvmkt_apps_script_url'); }catch(e){}
+    window.URL_APPS_SCRIPT_DINAMICO = null;
+  }
+
+  popularSeletorTV();
+  popularSeletorMeses();
+  renderTudo();
+
+  document.getElementById('linkCsv').value = URL_CSV_PADRAO;
+  buscarDadosAppsScript();
+}
+
+function mostrarDataBaseCarregada(){
+  const status = document.getElementById('statusSync');
+  const btnSync = document.getElementById('btnSync');
+  if(URL_APPS_SCRIPT && btnSync) btnSync.style.display = 'inline-block';
+  if(status){
+    if(URL_APPS_SCRIPT){
+      status.textContent = `📋 ${DADOS.length} contratos carregados. Clique em "Sincronizar" para buscar dados atualizados.`;
+    } else {
+      status.textContent = `📋 ${DADOS.length} contratos carregados. Configure o Apps Script ou use "Atualizar planilha" para atualizar.`;
+    }
+  }
+}
+
+function salvarUrlAppsScript(){
+  const url = document.getElementById('urlAppsScript').value.trim();
+  if(!url || !url.includes('script.google.com')){
+    alert('Cole uma URL válida do Google Apps Script (deve conter script.google.com).');
+    return;
+  }
+  // Salva na variável global e no localStorage para persistir
+  window.URL_APPS_SCRIPT_DINAMICO = url;
+  try{ localStorage.setItem('tvmkt_apps_script_url', url); }catch(e){}
+  fecharModalImport();
+  buscarDadosAppsScriptUrl(url);
+}
+
+async function buscarDadosAppsScriptUrl(url){
+  const status = document.getElementById('statusSync');
+  const btnSync = document.getElementById('btnSync');
+  if(status) status.textContent = '🔄 Sincronizando com a planilha...';
+  try{
+    const resp = await fetch(url, {
+      redirect: 'follow',
+      credentials: 'omit',
+      headers: { 'Accept': 'application/json' }
+    });
+    const json = await resp.json();
+    if(json.status !== 'ok') throw new Error(json.mensagem || 'Resposta inválida');
+    DADOS = json.dados.map((r,i)=>({...r, id:i+1}));
+    window.__qtdOriginal = DADOS.length;
+    popularSeletorTV();
+    renderTudo();
+    if(btnSync) btnSync.style.display = 'inline-block';
+    if(status) status.textContent = `✅ ${DADOS.length} contratos sincronizados com a planilha às ${new Date().toLocaleTimeString('pt-BR')}`;
+    // atualiza o botão de sincronizar para usar a URL salva
+    btnSync.onclick = function(){ buscarDadosAppsScriptUrl(url); };
+  }catch(e){
+    if(status) status.textContent = '❌ Não foi possível conectar ao Apps Script. Verifique a URL e as permissões de acesso.';
+    console.error('Erro ao buscar Apps Script:', e);
+  }
+}
+
+async function buscarDadosAppsScript(){
+  const urlDinamica = (window.URL_APPS_SCRIPT_DINAMICO) ||
+    (() => { try{ return localStorage.getItem('tvmkt_apps_script_url'); }catch(e){ return null; } })();
+  const url = urlDinamica || URL_APPS_SCRIPT;
+  if(!url){ mostrarDataBaseCarregada(); return; }
+  await buscarDadosAppsScriptUrl(url);
+}
+
+function renderTudo(){
+  renderVisaoGeral();
+  renderVencimentos();
+  renderContratos();
+}
+
+/* ===================== VISÃO GERAL ===================== */
+function calcularComissao(contrato, valorBase){
+  // TVs sem comissão — controlado pelo seletor interativo na Visão Geral
+  const tv = (contrato.tv||'').toUpperCase().trim();
+  if(TVS_SEM_COMISSAO.includes(tv)) return 0;
+  return valorBase * COMISSAO_PCT;
+}
+
+function toggleTvSemComissao(checkbox){
+  const tv = checkbox.value.toUpperCase().trim();
+  if(checkbox.checked){
+    if(!TVS_SEM_COMISSAO.includes(tv)) TVS_SEM_COMISSAO.push(tv);
+    checkbox.nextElementSibling.style.color = 'var(--verde)';
+    checkbox.nextElementSibling.style.fontWeight = '700';
+  } else {
+    TVS_SEM_COMISSAO = TVS_SEM_COMISSAO.filter(t=>t!==tv);
+    checkbox.nextElementSibling.style.color = '#22273a';
+    checkbox.nextElementSibling.style.fontWeight = '400';
+  }
+  // Recalcula comissão e lucro em tempo real
+  const hoje = new Date(); hoje.setHours(0,0,0,0);
+  const ativos = DADOS.filter(r => parseData(r.data_final) >= hoje);
+  const totalPago = ativos.filter(r=>ehPago(r.forma_pag)).reduce((s,r)=> s + (r.valor_mensal||0), 0);
+  const novaComissao = ativos.reduce((s,r)=> s + calcularComissao(r, r.valor_mensal||0), 0);
+  const novoLucro = totalPago - novaComissao;
+  const elCom = document.getElementById('kpi-comissao-valor');
+  const elLuc = document.getElementById('kpi-lucro-valor');
+  if(elCom) elCom.textContent = fmtMoeda(novaComissao);
+  if(elLuc) elLuc.textContent = fmtMoeda(novoLucro);
+}
+
+function renderVisaoGeral(){
+  const hoje = new Date(); hoje.setHours(0,0,0,0);
+  const ativos = DADOS.filter(r => parseData(r.data_final) >= hoje);
+  const totalMensal = ativos.reduce((s,r)=> s + (r.valor_mensal||0), 0);
+  const totalPago = ativos.filter(r=>ehPago(r.forma_pag)).reduce((s,r)=> s + (r.valor_mensal||0), 0);
+  const cortesiaPermutaList = ativos.filter(r=>!ehPago(r.forma_pag));
+  const totalCortesiaPermuta = cortesiaPermutaList.reduce((s,r)=> s + (r.valor_mensal||0), 0);
+  const comissaoTotal = ativos.reduce((s,r)=> s + calcularComissao(r, r.valor_mensal||0), 0);
+  const lucroEstimado = totalPago - comissaoTotal;
+
+  const limite45 = new Date(hoje); limite45.setDate(limite45.getDate()+45);
+  const vencendo = DADOS.filter(r=>{
+    const df = parseData(r.data_final);
+    return df !== null && df <= limite45;
+  });
+
+  // Lista de cortesia/permuta agrupada por TV
+  const cortesiaHtml = cortesiaPermutaList.length === 0
+    ? '<p style="color:#888;font-size:12px;margin-top:8px;">Nenhum contrato de cortesia/permuta ativo.</p>'
+    : '<div style="margin-top:10px;max-height:220px;overflow-y:auto;">' +
+      cortesiaPermutaList.map(r=>`
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #f0e8d0;font-size:12px;">
+          <div>
+            <div style="font-weight:700;color:#22273a;">${r.nome}</div>
+            <div style="color:#888;font-size:11px;">${r.tv} · ${r.forma_pag}</div>
+          </div>
+          <div style="font-weight:700;color:#9c7c0d;white-space:nowrap;margin-left:10px;">${fmtMoeda(r.valor_mensal)}</div>
+        </div>`).join('') + '</div>';
+
+  const kpis = [
+    {label:'Anunciantes ativos', valor: ativos.length, sub: DADOS.length+' contratos no total', classe:''},
+    {label:'Faturamento mensal contratado', valor: fmtMoeda(totalMensal), sub:'soma do valor mensal de todos ativos', classe:''},
+    {label:'Recebido (forma de pagamento paga)', valor: fmtMoeda(totalPago), sub:'PIX, cartão e planos pagos', classe:'bom'},
+    {label:'Contratos vencendo em 45 dias', valor: vencendo.length, sub:'atenção a renovação', classe: vencendo.length>0?'alerta':'bom'},
+  ];
+
+  // Monta checkboxes das TVs para seleção de isenção de comissão
+  const todasTvs = [...new Set(ativos.map(r=>(r.tv||'').toUpperCase().trim()))].sort();
+  const checkboxesTvs = todasTvs.map(tv=>{
+    const marcado = TVS_SEM_COMISSAO.includes(tv);
+    return `<label style="display:flex;align-items:center;gap:6px;font-size:11.5px;cursor:pointer;padding:3px 0;white-space:nowrap;">
+      <input type="checkbox" value="${tv}" ${marcado?'checked':''} onchange="toggleTvSemComissao(this)"
+        style="width:14px;height:14px;accent-color:var(--verde);cursor:pointer;">
+      <span style="color:${marcado?'var(--verde)':'#22273a'};font-weight:${marcado?'700':'400'}">${tv}</span>
+    </label>`;
+  }).join('');
+
+  document.getElementById('kpisGeral').innerHTML = kpis.map(k=>`
+    <div class="kpi ${k.classe}">
+      <div class="label">${k.label}</div>
+      <div class="valor">${k.valor}</div>
+      <div class="sub">${k.sub}</div>
+    </div>
+  `).join('') + `
+    <div class="kpi alerta" style="cursor:pointer;" onclick="this.querySelector('.cortesia-detalhe').style.display=this.querySelector('.cortesia-detalhe').style.display==='none'?'block':'none'">
+      <div class="label">Cortesia / Permuta (sem caixa) <span style="font-size:10px;opacity:.7;">▼ clique para ver</span></div>
+      <div class="valor">${fmtMoeda(totalCortesiaPermuta)}</div>
+      <div class="sub">${cortesiaPermutaList.length} contrato(s) — gera comissão, não gera caixa</div>
+      <div class="cortesia-detalhe" style="display:none;">${cortesiaHtml}</div>
+    </div>
+    <div class="kpi ruim" style="grid-column:span 2;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;">
+        <div>
+          <div class="label">Comissão a repassar (30%)</div>
+          <div class="valor" id="kpi-comissao-valor">${fmtMoeda(comissaoTotal)}</div>
+        </div>
+        <div style="flex:1;min-width:200px;">
+          <div class="sub" style="margin-bottom:8px;font-weight:700;">TVs isentas (marque as que não paga):</div>
+          <div style="display:flex;flex-wrap:wrap;gap:4px 16px;">${checkboxesTvs}</div>
+        </div>
+      </div>
+    </div>
+    <div class="kpi ${lucroEstimado>=0?'bom':'ruim'}">
+      <div class="label">Lucro estimado</div>
+      <div class="valor" id="kpi-lucro-valor">${fmtMoeda(lucroEstimado)}</div>
+      <div class="sub">recebido − comissão repassada</div>
+    </div>`;
+
+  // gráfico simples de barras por local (faturamento)
+  const porLocal = {};
+  ativos.forEach(r=>{
+    const tv = r.tv || '—';
+    porLocal[tv] = (porLocal[tv]||0) + (r.valor_mensal||0);
+  });
+  const max = Math.max(...Object.values(porLocal), 1);
+  const linhas = Object.entries(porLocal).sort((a,b)=>b[1]-a[1]).map(([tv,val])=>`
+    <div style="display:flex; align-items:center; gap:10px; margin-bottom:9px;">
+      <div style="width:170px; font-size:12px; font-weight:600; color:#22273a;">${tv}</div>
+      <div style="flex:1; background:#eef1f8; border-radius:6px; overflow:hidden; height:20px;">
+        <div style="width:${(val/max*100).toFixed(1)}%; background:linear-gradient(90deg,#13316b,#2a5cb8); height:100%;"></div>
+      </div>
+      <div style="width:100px; text-align:right; font-size:12px; font-weight:700; color:#0a1a3c;">${fmtMoeda(val)}</div>
+    </div>
+  `).join('');
+  document.getElementById('graficoLocais').innerHTML = linhas || '<div class="vazio">Sem dados.</div>';
+
+  // tabela de vencimentos resumida (top 8)
+  const tbody = document.querySelector('#tabelaVisaoVenc tbody');
+  const lista = vencendo.sort((a,b)=> parseData(a.data_final)-parseData(b.data_final)).slice(0,8);
+  tbody.innerHTML = lista.map(r=>{
+    const dias = diasEntre(hoje, parseData(r.data_final));
+    const status = dias<=15 ? `<span class="pill pill-naopago">Urgente · ${dias}d</span>` : `<span class="pill pill-venc">Atenção · ${dias}d</span>`;
+    return `<tr><td>${r.tv}</td><td>${r.nome}</td><td>${r.segmento}</td><td>${fmtData(parseData(r.data_final))}</td><td>${dias} dias</td><td>${status}</td></tr>`;
+  }).join('') || `<tr><td colspan="6" class="vazio">Nenhum contrato vencendo nos próximos 45 dias.</td></tr>`;
+}
+
+/* ===================== VENCIMENTOS ===================== */
+function renderVencimentos(){
+  const hoje = new Date(); hoje.setHours(0,0,0,0);
+  document.getElementById('tagHoje').textContent = 'Hoje: '+fmtData(hoje);
+  const limite45 = new Date(hoje); limite45.setDate(limite45.getDate()+45);
+
+  const busca = (document.getElementById('buscaVenc').value||'').toLowerCase();
+  const statusFiltro = document.getElementById('filtroVencStatus').value;
+
+  let lista = DADOS.map(r=>({...r, _df: parseData(r.data_final)}))
+    .filter(r=> r._df !== null && r._df <= limite45); // vencidos + até 45 dias
+
+  if(busca){
+    lista = lista.filter(r => (r.nome||'').toLowerCase().includes(busca) || (r.tv||'').toLowerCase().includes(busca) || (r.segmento||'').toLowerCase().includes(busca));
+  }
+  lista = lista.filter(r=>{
+    const dias = diasEntre(hoje, r._df);
+    if(statusFiltro==='vencido') return dias<0;
+    if(statusFiltro==='urgente') return dias>=0 && dias<=15;
+    if(statusFiltro==='alerta') return dias>=0 && dias<=45;
+    return true;
+  });
+
+  lista.sort((a,b)=>a._df-b._df);
+
+  const tbody = document.querySelector('#tabelaVencimentos tbody');
+  tbody.innerHTML = lista.map(r=>{
+    const dias = diasEntre(hoje, r._df);
+    let status;
+    if(dias<0) status = `<span class="pill pill-naopago">Vencido há ${Math.abs(dias)}d</span>`;
+    else if(dias<=15) status = `<span class="pill pill-naopago">Urgente · ${dias}d</span>`;
+    else status = `<span class="pill pill-venc">Atenção · ${dias}d</span>`;
+    return `<tr>
+      <td>${r.tv}</td><td>${r.nome}</td><td>${r.segmento}</td>
+      <td>${fmtData(parseData(r.data_inicio))}</td><td>${fmtData(r._df)}</td>
+      <td>${dias} dias</td><td>${r.forma_pag}</td><td>${fmtMoeda(r.valor_mensal)}</td><td>${status}</td>
+    </tr>`;
+  }).join('') || `<tr><td colspan="9" class="vazio">Nenhum contrato encontrado.</td></tr>`;
+}
+
+/* ===================== CONTRATOS (TODOS) ===================== */
+function popularSeletorTV(){
+  const tvs = [...new Set(DADOS.map(r=>r.tv).filter(Boolean))].sort();
+  const sel = document.getElementById('filtroTV');
+  sel.innerHTML = '<option value="">Todas as TVs</option>';
+  tvs.forEach(tv=>{
+    const opt = document.createElement('option'); opt.value=tv; opt.textContent=tv; sel.appendChild(opt);
+  });
+  const selPag = document.getElementById('filtroPag');
+  selPag.innerHTML = '<option value="">Todas as formas de pagamento</option>';
+  const pags = [...new Set(DADOS.map(r=>r.forma_pag).filter(Boolean))].sort();
+  pags.forEach(p=>{
+    const opt = document.createElement('option'); opt.value=p; opt.textContent=p; selPag.appendChild(opt);
+  });
+  popularListaTvsFechamento();
+}
+
+function normalizarTVFechamento(tv) {
+  const t = (tv||'').toUpperCase();
+  if (t.includes('MOREIRA') || t.includes('CT MOVIMENT')) return 'CT MOVIMENT MOREIRA CÉSAR';
+  return tv;
+}
+
+function popularListaTvsFechamento(){
+  const tvs = [...new Set(DADOS.map(r=>r.tv).filter(Boolean))].sort();
+  const cont = document.getElementById('listaTvsFechamento');
+  const marcadasAntes = new Set(
+    [...cont.querySelectorAll('input[type="checkbox"]:checked')].map(c=>c.value)
+  );
+  const tvsMoreira = tvs.filter(tv => normalizarTVFechamento(tv) === 'CT MOVIMENT MOREIRA CÉSAR');
+  const tvsNormais = tvs.filter(tv => normalizarTVFechamento(tv) !== 'CT MOVIMENT MOREIRA CÉSAR');
+  let html = '';
+  if(tvsMoreira.length > 0){
+    const todasMarcadas = marcadasAntes.size===0 || tvsMoreira.every(tv=>marcadasAntes.has(tv));
+    html += `<div class="tv-card ${todasMarcadas?'selecionado':''}" style="border:2px solid ${todasMarcadas?'var(--verde)':'var(--dourado)'};padding:12px;flex-direction:column;align-items:flex-start;gap:8px;">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+        <label style="display:flex;align-items:center;gap:6px;font-weight:800;cursor:pointer;margin:0;color:var(--azul);">
+          <input type="checkbox" id="check-moreira-grupo" ${todasMarcadas?'checked':''}
+            onchange="toggleGrupoMoreira(this)" style="width:15px;height:15px;accent-color:var(--verde);">
+          ⭐ CT Moviment Moreira César
+        </label>
+        <span style="font-size:10px;background:${todasMarcadas?'var(--verde)':'var(--dourado)'};color:#fff;padding:2px 8px;border-radius:10px;font-weight:800;">${tvsMoreira.length} TVs — fechamento unificado</span>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;">
+        ${tvsMoreira.map(tv=>{const m=marcadasAntes.size===0||marcadasAntes.has(tv);return`<label style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--cinza-texto);cursor:pointer;background:#f4f6fb;padding:3px 8px;border-radius:8px;"><input type="checkbox" class="check-moreira-tv" value="${tv}" ${m?'checked':''} onchange="atualizarCardMoreira()" style="accent-color:var(--verde);">${tv}</label>`;}).join('')}
+      </div>
+    </div>`;
+  }
+  html += tvsNormais.map(tv=>{
+    const marcado = marcadasAntes.size===0||marcadasAntes.has(tv);
+    return `<label class="tv-card ${marcado?'selecionado':''}"><input type="checkbox" value="${tv}" ${marcado?'checked':''} onchange="atualizarCardTv(this)">${tv}</label>`;
+  }).join('');
+  cont.innerHTML = html || '<div class="vazio">Nenhuma TV cadastrada.</div>';
+}
+
+function toggleGrupoMoreira(checkbox){
+  document.querySelectorAll('.check-moreira-tv').forEach(c=>{c.checked=checkbox.checked;});
+  atualizarCardMoreira();
+}
+
+function atualizarCardMoreira(){
+  const tvs = [...document.querySelectorAll('.check-moreira-tv')];
+  const todas = tvs.every(c=>c.checked);
+  const alguma = tvs.some(c=>c.checked);
+  const checkGrupo = document.getElementById('check-moreira-grupo');
+  if(checkGrupo){
+    checkGrupo.checked = todas;
+    checkGrupo.indeterminate = alguma && !todas;
+    const card = checkGrupo.closest('.tv-card');
+    if(card){
+      card.classList.toggle('selecionado', alguma);
+      card.style.borderColor = todas ? 'var(--verde)' : (alguma ? 'var(--dourado)' : 'var(--cinza-borda)');
+      const badge = card.querySelector('span[style*="background"]');
+      if(badge) badge.style.background = todas ? 'var(--verde)' : 'var(--dourado)';
+    }
+  }
+}
+
+function atualizarCardTv(checkbox){
+  checkbox.closest('.tv-card').classList.toggle('selecionado', checkbox.checked);
+}
+
+function marcarTodasTvs(marcar){
+  document.querySelectorAll('#listaTvsFechamento input[type="checkbox"]').forEach(c=>{
+    c.checked = marcar;
+    atualizarCardTv(c);
+  });
+}
+
+function tvsSelecionadas(){
+  return [...document.querySelectorAll('#listaTvsFechamento input[type="checkbox"]:checked')].map(c=>c.value);
+}
+
+function renderContratos(){
+  const busca = (document.getElementById('buscaContratos').value||'').toLowerCase();
+  const tvF = document.getElementById('filtroTV').value;
+  const pagF = document.getElementById('filtroPag').value;
+
+  let lista = [...DADOS];
+  if(busca) lista = lista.filter(r => (r.nome||'').toLowerCase().includes(busca) || (r.tv||'').toLowerCase().includes(busca) || (r.segmento||'').toLowerCase().includes(busca));
+  if(tvF) lista = lista.filter(r=>r.tv===tvF);
+  if(pagF) lista = lista.filter(r=>r.forma_pag===pagF);
+
+  lista.sort((a,b)=> (a.tv||'').localeCompare(b.tv||'') || (a.nome||'').localeCompare(b.nome||''));
+
+  const tbody = document.querySelector('#tabelaContratos tbody');
+  tbody.innerHTML = lista.map(r=>{
+    const pago = ehPago(r.forma_pag);
+    const pill = pago ? `<span class="pill pill-pago">Pago</span>` : `<span class="pill pill-naopago">${r.forma_pag}</span>`;
+    return `<tr>
+      <td>${r.tv}</td><td>${r.nome}</td><td>${r.segmento}</td>
+      <td>${fmtData(parseData(r.data_inicio))}</td><td>${fmtData(parseData(r.data_final))}</td>
+      <td>${pill}</td><td>${fmtMoeda(r.valor_mensal)}</td>
+    </tr>`;
+  }).join('') || `<tr><td colspan="7" class="vazio">Nenhum contrato encontrado.</td></tr>`;
+}
+
+/* ===================== FECHAMENTO DE COMISSÃO ===================== */
+function popularSeletorMeses(){
+  // Pré-preenche os campos com o período atual (dia 05 do mês passado ao dia 05 deste mês)
+  const hoje = new Date();
+  const ini = new Date(hoje.getFullYear(), hoje.getMonth()-1, 5);
+  const fim = new Date(hoje.getFullYear(), hoje.getMonth(), 5);
+  const fmt = d => d.toISOString().split('T')[0];
+  document.getElementById('dataIniFechamento').value = fmt(ini);
+  document.getElementById('dataFimFechamento').value = fmt(fim);
+}
+
+function calcularProporcional(valorMensal, dataInicioContrato, periodoIni, periodoFim){
+  // período de cobrança real = interseção entre [periodoIni, periodoFim) e contrato vigente desde dataInicioContrato
+  const inicioReal = dataInicioContrato > periodoIni ? dataInicioContrato : periodoIni;
+  if(inicioReal >= periodoFim) return 0;
+  const diasNoPeriodo = diasEntre(inicioReal, periodoFim);
+  const valorDiario = valorMensal / 30;
+  return Math.max(0, valorDiario * diasNoPeriodo);
+}
+
+function diasProporcionaisLabel(dataInicioContrato, periodoIni, periodoFim){
+  const inicioReal = dataInicioContrato > periodoIni ? dataInicioContrato : periodoIni;
+  if(inicioReal >= periodoFim) return '0 dias';
+  const dias = diasEntre(inicioReal, periodoFim);
+  return dias>=30 ? 'mês cheio' : `${dias} dias`;
+}
+
+function gerarFechamento(){
+  const iniVal = document.getElementById('dataIniFechamento').value;
+  const fimVal = document.getElementById('dataFimFechamento').value;
+
+  if(!iniVal || !fimVal){
+    alert('Preencha as duas datas do período antes de gerar o fechamento.');
+    return;
+  }
+
+  const periodoIni = new Date(iniVal + 'T00:00:00');
+  const periodoFim = new Date(fimVal + 'T00:00:00');
+
+  if(periodoFim <= periodoIni){
+    alert('A data final deve ser maior que a data inicial.');
+    return;
+  }
+
+  const tvsSel = tvsSelecionadas();
+
+  if(tvsSel.length===0){
+    alert('Selecione pelo menos uma TV/local para gerar o fechamento.');
+    return;
+  }
+
+  // contratos vigentes em algum ponto do período: data_inicio < periodoFim E data_final >= periodoIni, dentro das TVs selecionadas
+  const vigentes = DADOS.filter(r=>{
+    const di = parseData(r.data_inicio);
+    const df = parseData(r.data_final);
+    return di < periodoFim && df >= periodoIni && tvsSel.includes(r.tv);
+  }).map(r=>{
+    const di = parseData(r.data_inicio);
+    const valorProporcional = calcularProporcional(r.valor_mensal, di, periodoIni, periodoFim);
+    const pago = ehPago(r.forma_pag);
+    const comissao = valorProporcional * COMISSAO_PCT; // no fechamento todos pagam 30%
+    const diasLabel = diasProporcionaisLabel(di, periodoIni, periodoFim);
+    return {...r, valorProporcional, pago, comissao, diasLabel};
+  });
+
+  const totalFaturado = vigentes.reduce((s,r)=>s+r.valorProporcional,0);
+  const totalRecebido = vigentes.filter(r=>r.pago).reduce((s,r)=>s+r.valorProporcional,0);
+  const totalNaoRecebido = totalFaturado - totalRecebido;
+  const comissaoTotal = vigentes.reduce((s,r)=>s+r.comissao,0);
+  const lucro = totalRecebido - comissaoTotal;
+
+  // ── AGRUPAMENTO ESPECIAL: CT Moviment Moreira César (TV 01+02+03 = mesmo parceiro) ──
+  function normalizarTV(tv) {
+    const t = (tv||'').toUpperCase();
+    if (t.includes('MOREIRA') || t.includes('CT MOVIMENT')) return 'CT MOVIMENT MOREIRA CÉSAR';
+    return tv;
+  }
+
+  // agrupar por TV/local para o repasse (com agrupamento do Moreira)
+  const porLocal = {};
+  vigentes.forEach(r=>{
+    const tvOriginal = r.tv || '—';
+    const tv = normalizarTV(tvOriginal);
+    if(!porLocal[tv]) porLocal[tv] = {faturado:0, recebido:0, comissao:0, itens:[], tvsOriginais:new Set()};
+    porLocal[tv].faturado += r.valorProporcional;
+    porLocal[tv].recebido += r.pago ? r.valorProporcional : 0;
+    porLocal[tv].comissao += r.comissao;
+    porLocal[tv].itens.push({...r, tvOriginal});
+    porLocal[tv].tvsOriginais.add(tvOriginal);
+  });
+
+  const dataGeracao = new Date();
+
+  // ===== CABEÇALHO / RESUMO EXECUTIVO GERAL =====
+  const linhasResumoLocais = Object.entries(porLocal).sort((a,b)=>b[1].comissao-a[1].comissao).map(([tv,v])=>{
+    const tvsLabel = v.tvsOriginais && v.tvsOriginais.size > 1
+      ? `${tv} <span style="font-size:10px;color:#888;">(${[...v.tvsOriginais].join(', ')})</span>`
+      : tv;
+    return `
+    <tr>
+      <td><strong>${tvsLabel}</strong></td>
+      <td>${v.itens.length}</td>
+      <td>${fmtMoeda(v.faturado)}</td>
+      <td>${fmtMoeda(v.recebido)}</td>
+      <td><strong>${fmtMoeda(v.comissao)}</strong></td>
+    </tr>`;
+  }).join('');
+
+  let html = `
+    <div class="painel no-print" id="areaImpressao">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; border-bottom:2px solid #0a1a3c; padding-bottom:14px; margin-bottom:18px;">
+        <div>
+          <h2 style="margin-bottom:4px;">Relatório de Fechamento de Comissões — Resumo Geral</h2>
+          <div style="font-size:12.5px; color:#5a6478;">Período: <strong>${fmtData(periodoIni)} a ${fmtData(periodoFim)}</strong> &nbsp;·&nbsp; Gerado em ${fmtData(dataGeracao)}</div>
+        </div>
+        <div style="text-align:right; font-size:11px; color:#5a6478; line-height:1.5;">
+          <strong>FRANÇA PRODUÇÕES E SERVIÇOS LTDA</strong><br>
+          CNPJ: 46.315.922/0001-99<br>
+          Rua Eugênio Siqueira Salgado, 101 - Casa B<br>Bosque da Princesa - Pindamonhangaba/SP
+        </div>
+      </div>
+
+      <div class="kpis" style="margin-bottom:22px;">
+        <div class="kpi"><div class="label">Faturamento do período (proporcional)</div><div class="valor">${fmtMoeda(totalFaturado)}</div><div class="sub">${vigentes.length} contratos vigentes</div></div>
+        <div class="kpi bom"><div class="label">Total recebido</div><div class="valor">${fmtMoeda(totalRecebido)}</div><div class="sub">formas de pagamento com entrada em caixa</div></div>
+        <div class="kpi alerta"><div class="label">Não recebido (cortesia/permuta)</div><div class="valor">${fmtMoeda(totalNaoRecebido)}</div><div class="sub">gera comissão, sem caixa</div></div>
+        <div class="kpi ruim"><div class="label">Comissão total a repassar (30%)</div><div class="valor">${fmtMoeda(comissaoTotal)}</div><div class="sub">sobre faturamento proporcional total</div></div>
+        <div class="kpi ${lucro>=0?'bom':'ruim'}"><div class="label">Lucro líquido do período</div><div class="valor">${fmtMoeda(lucro)}</div><div class="sub">recebido − comissão repassada</div></div>
+      </div>
+
+      <h2 style="margin-bottom:10px;">Resumo de repasse por Local (TV)</h2>
+      <table>
+        <thead><tr><th>TV / Local</th><th>Anunciantes</th><th>Faturado (prop.)</th><th>Recebido</th><th>Comissão a repassar (30%)</th></tr></thead>
+        <tbody>${linhasResumoLocais || '<tr><td colspan="5" class="vazio">Nenhum contrato vigente no período.</td></tr>'}</tbody>
+      </table>
+
+      <div style="margin-top:18px; font-size:11px; color:#5a6478; border-top:1px solid #dde3ee; padding-top:14px;">
+        Valores proporcionais calculados com base em 30 dias/mês para contratos iniciados durante o período de fechamento.
+        Comissão de 30% aplicada sobre o valor mensal informado, independentemente da forma de pagamento (inclusive cortesia e permuta).
+        Os relatórios individuais de cada local, prontos para envio aos parceiros, seguem nas páginas abaixo.
+      </div>
+    </div>
+  `;
+
+  // ===== RELATÓRIO INDIVIDUAL POR TV/LOCAL (pronto para enviar ao parceiro) =====
+  const locaisOrdenados = Object.entries(porLocal).sort((a,b)=> a[0].localeCompare(b[0]));
+
+  locaisOrdenados.forEach(([tv, v], indice)=>{
+    const linhasItens = v.itens
+      .sort((a,b)=> parseData(a.data_inicio)-parseData(b.data_inicio))
+      .map((r,i)=>`
+        <tr>
+          <td>${i+1}</td>
+          <td><strong>${r.nome}</strong></td>
+          <td>${fmtData(parseData(r.data_inicio))}</td>
+          <td>${r.diasLabel}</td>
+          <td>${fmtMoeda(r.valor_mensal)}</td>
+          <td><strong>${fmtMoeda(r.comissao)}</strong></td>
+        </tr>
+      `).join('');
+
+    const classeQuebra = indice===0 ? '' : 'quebra-pagina';
+    const tvsOriginaisLabel = v.tvsOriginais && v.tvsOriginais.size > 1
+      ? `<div style="font-size:11px;color:#888;margin-top:3px;">TVs: ${[...v.tvsOriginais].join(' · ')}</div>` : '';
+    const nomeArquivo = `Fechamento_${tv.replace(/[^a-zA-Z0-9]/g,'_')}_${fmtData(periodoIni).replace(/\//g,'-')}.pdf`;
+    html += `
+      <div class="painel ${classeQuebra}">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; border-bottom:2px solid #0a1a3c; padding-bottom:14px; margin-bottom:18px;">
+          <div>
+            <h2 style="margin-bottom:4px;">Relatório de Repasse — ${tv}</h2>
+            ${tvsOriginaisLabel}
+            <div style="font-size:12.5px; color:#5a6478;">Período: <strong>${fmtData(periodoIni)} a ${fmtData(periodoFim)}</strong> &nbsp;·&nbsp; Gerado em ${fmtData(dataGeracao)}</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:11px; color:#5a6478; line-height:1.5; margin-bottom:8px;">
+              <strong>FRANÇA PRODUÇÕES E SERVIÇOS LTDA</strong><br>
+              CNPJ: 46.315.922/0001-99<br>
+              Rua Eugênio Siqueira Salgado, 101 - Casa B<br>Bosque da Princesa - Pindamonhangaba/SP
+            </div>
+            <button class="no-print" onclick="imprimirRelatorioIndividual('relatorio-${indice}','${nomeArquivo}')"
+              style="background:#0a1a3c;color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer;">
+              📥 Salvar PDF deste relatório
+            </button>
+          </div>
+        </div>
+
+        <div id="relatorio-${indice}" style="display:none;">${tv} — ${fmtData(periodoIni)} a ${fmtData(periodoFim)}</div>
+
+        <table>
+          <thead>
+            <tr>
+              <th style="width:36px;">QT</th>
+              <th>Anunciante</th>
+              <th>Data início</th>
+              <th>Dias proporcionais</th>
+              <th>Valor mensal</th>
+              <th>Valor parceiro (30%)</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${linhasItens}
+            <tr style="background:#e3f5ea;">
+              <td colspan="4"></td>
+              <td style="font-weight:800; color:#0a1a3c;">TOTAL</td>
+              <td style="font-weight:800; color:#1c8a4a; font-size:14px;">${fmtMoeda(v.comissao)}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div style="margin-top:18px; font-size:11px; color:#5a6478; border-top:1px solid #dde3ee; padding-top:14px;">
+          Valor parceiro calculado como 30% do valor mensal contratado, com proporcionalidade por dias para anunciantes
+          iniciados durante o período de fechamento (base de 30 dias por mês).
+        </div>
+      </div>
+    `;
+  });
+
+  document.getElementById('relatorioFechamento').innerHTML = html;
+}
+
+function imprimirFechamento(){
+  if(!document.getElementById('areaImpressao')){
+    alert('Gere o fechamento antes de imprimir.');
+    return;
+  }
+  window.print();
+}
+
+/* ===================== IMPORTAÇÃO ===================== */
+function abrirModalImport(){
+  document.getElementById('modalImport').classList.add('ativo');
+  // preenche a URL do Apps Script se já estiver salva
+  const urlSalva = window.URL_APPS_SCRIPT_DINAMICO ||
+    URL_APPS_SCRIPT ||
+    (() => { try{ return localStorage.getItem('tvmkt_apps_script_url'); }catch(e){ return ''; } })();
+  if(urlSalva) document.getElementById('urlAppsScript').value = urlSalva;
+  document.getElementById('linkCsv').value = URL_CSV_PADRAO;
+}
+function fecharModalImport(){ document.getElementById('modalImport').classList.remove('ativo'); }
+
+async function importarDeLink(){
+  const link = document.getElementById('linkCsv').value.trim();
+  const arquivo = document.getElementById('arquivoImport').files[0];
+
+  if(arquivo){
+    const texto = await arquivo.text();
+    processarCsv(texto);
+    fecharModalImport();
+    const status = document.getElementById('statusSync');
+    if(status) status.textContent = 'Dados atualizados a partir do arquivo enviado às '+new Date().toLocaleTimeString('pt-BR');
+    return;
+  }
+  if(!link){ alert('Selecione um arquivo .csv/.xlsx ou cole o link do CSV publicado.'); return; }
+  try{
+    const resp = await fetch(link);
+    const texto = await resp.text();
+    processarCsv(texto);
+    fecharModalImport();
+    const status = document.getElementById('statusSync');
+    if(status) status.textContent = 'Dados atualizados a partir do link às '+new Date().toLocaleTimeString('pt-BR');
+  }catch(e){
+    alert('Não foi possível buscar o link automaticamente (bloqueio de rede do navegador). Baixe o CSV e use a opção de upload de arquivo acima.');
+  }
+}
+
+function dividirLinhaCsv(linha){
+  // suporta campos entre aspas com vírgula interna
+  const result = [];
+  let atual = '', dentroAspas = false;
+  for(let i=0;i<linha.length;i++){
+    const c = linha[i];
+    if(c === '"'){ dentroAspas = !dentroAspas; continue; }
+    if(c === ',' && !dentroAspas){ result.push(atual); atual=''; continue; }
+    atual += c;
+  }
+  result.push(atual);
+  return result;
+}
+
+function limparValorMonetario(str){
+  if(str===undefined || str===null) return 0;
+  let s = String(str).trim();
+  if(!s) return 0;
+  // remove "R$", espaços, e mantém apenas dígitos, vírgula, ponto e sinal de menos
+  s = s.replace(/R\$/gi,'').trim();
+  const negativo = /^-|\(.*\)$/.test(s);
+  s = s.replace(/[()]/g,'').replace(/-/g,'').trim();
+  if(s === '' || s === '-' ) return 0;
+  // formato brasileiro: ponto = milhar, vírgula = decimal
+  if(s.includes(',')){
+    s = s.replace(/\./g,'').replace(',', '.');
+  }
+  const num = parseFloat(s);
+  if(isNaN(num)) return 0;
+  return negativo ? -num : num;
+}
+
+function processarCsv(texto, silencioso){
+  const todasLinhas = texto.split(/\r?\n/).filter(l=>l.trim() && l.replace(/[, ]/g,'')!=='');
+
+  // localiza a linha real de cabeçalho (procura por "tv" e "nome" nas primeiras linhas)
+  let headerIdx = -1, header = [];
+  for(let i=0;i<Math.min(todasLinhas.length,5);i++){
+    const cols = dividirLinhaCsv(todasLinhas[i]).map(h=>h.trim().toLowerCase());
+    if(cols.some(c=>c==='tv') && cols.some(c=>c==='nome')){
+      headerIdx = i; header = cols; break;
+    }
+  }
+  if(headerIdx===-1){
+    if(!silencioso) alert('Não foi possível localizar o cabeçalho (colunas Tv, Nome, etc.) no arquivo. Confira se a aba "TODOS" estava selecionada no Google Sheets antes de baixar o CSV.');
+    return;
+  }
+
+  const idx = (nome)=> header.findIndex(h=>h.includes(nome));
+  const iTv = idx('tv'), iNome = idx('nome'), iSeg = idx('segmento'), iDi = idx('inicio'),
+        iDf = idx('final'), iPag = idx('pag'), iVal = idx('mensal');
+
+  if(iTv===-1 || iNome===-1 || iDi===-1 || iDf===-1 || iVal===-1){
+    if(!silencioso){
+      alert('Este arquivo não parece ser da aba "TODOS" da planilha (faltam colunas como Data Início, Data Final ou Valor Mensal). Verifique se a aba "TODOS" estava selecionada no Google Sheets antes de baixar o CSV, e tente novamente.');
+    }
+    return;
+  }
+
+  const novos = [];
+  for(let i=headerIdx+1;i<todasLinhas.length;i++){
+    const cols = dividirLinhaCsv(todasLinhas[i]);
+    if(cols.length<3) continue;
+    const tv = (cols[iTv]||'').trim();
+    const nome = (cols[iNome]||'').trim();
+    if(!tv || !nome) continue;
+    novos.push({
+      id: i,
+      tv, nome,
+      segmento: (cols[iSeg]||'').trim(),
+      data_inicio: converterDataCsv(cols[iDi]),
+      data_final: converterDataCsv(cols[iDf]),
+      forma_pag: (cols[iPag]||'').trim().toUpperCase(),
+      valor_mensal: limparValorMonetario(cols[iVal]),
+      tempo_contrato: null
+    });
+  }
+  if(novos.length===0){ if(!silencioso) alert('Não foi possível identificar linhas válidas no CSV. Confira se a aba "TODOS" estava selecionada antes do download.'); return; }
+  DADOS = novos;
+  window.__qtdOriginal = DADOS.length;
+  popularSeletorTV();
+  renderTudo();
+  if(!silencioso) alert(`${novos.length} contratos importados com sucesso!`);
+}
+
+function converterDataCsv(str){
+  if(!str) return null;
+  str = String(str).trim();
+  if(!str) return null;
+  if(str.includes('/')){
+    const partes = str.split('/').map(p=>p.trim());
+    if(partes.length!==3) return null;
+    let [a,b,y] = partes;
+    if(y.length===2) y = '20'+y;
+    // Google Sheets exporta CSV em formato M/D/AAAA (mês primeiro)
+    const mes = String(a).padStart(2,'0');
+    const dia = String(b).padStart(2,'0');
+    return `${y}-${mes}-${dia}`;
+  }
+  if(str.includes('-')){
+    // já em AAAA-MM-DD
+    return str.split(' ')[0];
+  }
+  return null;
+}
+
+/* ===================== CONTRATOS PENDENTES DO FORMS ===================== */
+async function carregarPendentes(){
+  const urlBase = obterUrlAppsScript();
+  if(!urlBase){
+    document.getElementById('pendentes-status').textContent = 'URL do Apps Script não configurada. Use "Atualizar planilha" para configurar.';
+    return;
+  }
+  const status = document.getElementById('pendentes-status');
+  const lista  = document.getElementById('pendentes-lista');
+  status.textContent = '🔄 Carregando formulários enviados...';
+  lista.innerHTML = '';
+  try{
+    const resp = await fetch(urlBase + '?acao=formularios');
+    const json = await resp.json();
+    if(json.status !== 'ok') throw new Error(json.mensagem || 'Erro');
+    if(json.aviso) status.textContent = '⚠️ ' + json.aviso;
+    else if(json.total === 0) status.textContent = 'Nenhum formulário pendente no momento.';
+    else status.textContent = `${json.total} formulário(s) pendente(s) aguardando geração de contrato.`;
+
+    json.formularios.forEach(function(f){
+      const tipos = f.tipo ? f.tipo.split(',').map(function(t){ return t.trim(); }) : ['?'];
+      const tagsTipo = tipos.map(function(t){
+        const cor = t.toLowerCase().includes('parceiro') ? '#E85B4A' : '#13316b';
+        return `<span class="ptipo" style="background:${cor};">${t}</span>`;
+      }).join(' ');
+
+      const div = document.createElement('div');
+      div.className = 'pendente-card';
+      div.innerHTML = `
+        <div class="pendente-info">
+          <div class="pnome">${f.razao || '(sem nome)'}</div>
+          <div class="pmeta">CNPJ/CPF: ${f.cnpj || '—'} &nbsp;·&nbsp; Recebido: ${f.timestamp}</div>
+          <div style="margin-top:5px;">${tagsTipo}</div>
+        </div>
+        <div class="pendente-acoes">
+          <button class="btn-gerar" onclick="gerarContratoDoForms(${f.linha})">📄 Gerar contrato</button>
+          ${(f.doc_rep_url || f.doc_end_url) ? `
+          <div style="display:flex;gap:6px;flex-wrap:wrap;">
+            ${f.doc_rep_url ? `<a class="btn-docs" href="${f.doc_rep_url}" target="_blank">🪪 Doc. Representante</a>` : ''}
+            ${f.doc_end_url ? `<a class="btn-docs" href="${f.doc_end_url}" target="_blank">📄 Comp. Endereço</a>` : '<span style="font-size:11px;color:#888;align-self:center;">📎 Docs pendentes</span>'}
+          </div>` : '<span style="font-size:11px;color:#aaa;">📎 Sem documentos</span>'}
+          <button class="btn-deletar" onclick="deletarPendente(${f.linha}, this)">✕ Remover</button>
+        </div>
+      `;
+      div.dataset.forms = JSON.stringify(f);
+      lista.appendChild(div);
+    });
+  }catch(e){
+    status.textContent = '❌ Não foi possível carregar: ' + e.message;
+  }
+}
+
+function obterUrlAppsScript(){
+  return window.URL_APPS_SCRIPT_DINAMICO ||
+    URL_APPS_SCRIPT ||
+    (() => { try{ return localStorage.getItem('tvmkt_apps_script_url'); }catch(e){ return ''; } })();
+}
+
+function gerarContratoDoForms(linha){
+  const cards = document.querySelectorAll('.pendente-card');
+  let f = null;
+  cards.forEach(function(c){ if(JSON.parse(c.dataset.forms).linha === linha) f = JSON.parse(c.dataset.forms); });
+  if(!f){ alert('Formulário não encontrado.'); return; }
+
+  // Abre modal de revisão com todos os dados editáveis
+  abrirRevisaoContrato(f);
+}
+
+function abrirRevisaoContrato(f){
+  // Remove modal anterior se existir
+  const modalExist = document.getElementById('modal-revisao');
+  if(modalExist) modalExist.remove();
+
+  const tipo = (f.tipo || 'Anunciante').toLowerCase();
+  const geraAnunciante = tipo.includes('anunciante') || tipo.includes('ambos');
+  const geraParceiro   = tipo.includes('parceiro')   || tipo.includes('ambos');
+
+  // Detecta PJ ou PF
+  const isPJ = (f.tipo_pessoa || '').toLowerCase().includes('jur') || (f.cnpj || '').replace(/\D/g,'').length > 11;
+  const tipoLabel = isPJ ? 'Pessoa Jurídica' : 'Pessoa Física';
+
+  // Monta prazo a partir do plano
+  const plano = f.plano || '';
+  const prazo = plano.includes('12') ? '12' : plano.includes('6') ? '6' : '';
+  const prazoExt = quantidadePorExtenso(prazo);
+
+  const modal = document.createElement('div');
+  modal.id = 'modal-revisao';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(10,26,60,.7);z-index:9999;overflow-y:auto;padding:24px;display:flex;align-items:flex-start;justify-content:center;';
+
+  modal.innerHTML = `
+    <div style="background:#fff;border-radius:18px;max-width:720px;width:100%;padding:32px;box-shadow:0 20px 60px rgba(0,0,0,.3);margin:auto;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;border-bottom:2px solid #eef1f8;padding-bottom:16px;">
+        <div>
+          <h2 style="font-size:18px;font-weight:900;color:#0a1a3c;margin:0;">📋 Revisar antes de gerar o contrato</h2>
+          <p style="font-size:12px;color:#5a6478;margin:4px 0 0;">Confira os dados, edite o necessário e preencha as testemunhas</p>
+        </div>
+        <button onclick="document.getElementById('modal-revisao').remove()" style="background:#eef1f8;border:none;border-radius:8px;padding:8px 14px;cursor:pointer;font-size:13px;font-weight:700;color:#5a6478;">✕ Fechar</button>
+      </div>
+
+      <!-- DADOS DO CONTRATANTE -->
+      <div style="margin-bottom:20px;">
+        <h3 style="font-size:12px;font-weight:800;color:#0a1a3c;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;display:flex;align-items:center;gap:8px;">
+          <span style="background:#0a1a3c;color:#fff;width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:10px;">1</span>
+          Dados do Contratante
+        </h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          ${campoRevisao('rev_razao', 'Razão Social / Nome', f.razao, 'span 2')}
+          ${campoRevisao('rev_cnpj', 'CNPJ / CPF', f.cnpj)}
+          ${campoRevisao('rev_tipo_pessoa', 'Tipo', tipoLabel)}
+          ${campoRevisao('rev_endereco', 'Endereço completo', f.endereco, 'span 2')}
+          ${campoRevisao('rev_representante', 'Representante Legal', f.representante)}
+          ${campoRevisao('rev_rep_cpf', 'CPF do Representante', f.rep_cpf)}
+          ${campoRevisao('rev_telefone', 'Telefone', f.telefone)}
+          ${campoRevisao('rev_segmento', 'Atividade / Segmento', f.segmento)}
+        </div>
+      </div>
+
+      <!-- DADOS DO CONTRATO -->
+      <div style="margin-bottom:20px;">
+        <h3 style="font-size:12px;font-weight:800;color:#0a1a3c;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;display:flex;align-items:center;gap:8px;">
+          <span style="background:#0a1a3c;color:#fff;width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:10px;">2</span>
+          Dados do Contrato
+        </h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          ${campoRevisao('rev_locais', 'Locais de veiculação', f.locais, 'span 2', 'textarea')}
+          ${campoRevisao('rev_plano', 'Plano', f.plano || '')}
+          ${campoRevisao('rev_forma_pag', 'Forma de pagamento', f.forma_pag || '')}
+          ${campoRevisao('rev_prazo', 'Prazo (meses)', prazo, '', '', 'oninput="document.getElementById(\'rev_prazo_ext\').value=quantidadePorExtenso(this.value)"')}
+          ${campoRevisao('rev_prazo_ext', 'Prazo por extenso', prazoExt)}
+          ${campoRevisao('rev_valor', 'Valor mensal (R$)', f.valor || '', '', '', 'oninput="document.getElementById(\'rev_valor_ext\').value=valorPorExtenso(this.value)"')}
+          ${campoRevisao('rev_valor_ext', 'Valor por extenso', f.valor ? valorPorExtenso(f.valor) : '')}
+          ${campoRevisao('rev_vencimento', 'Dia de vencimento', f.vencimento || '5', '', '', 'oninput="document.getElementById(\'rev_vencimento_ext\').value=numeroPorExtenso(this.value)"')}
+          ${campoRevisao('rev_vencimento_ext', 'Vencimento por extenso', numeroPorExtenso(f.vencimento))}
+        </div>
+      </div>
+
+      <!-- ASSINATURA -->
+      <div style="margin-bottom:20px;">
+        <h3 style="font-size:12px;font-weight:800;color:#0a1a3c;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;display:flex;align-items:center;gap:8px;">
+          <span style="background:#0a1a3c;color:#fff;width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:10px;">3</span>
+          Data de Assinatura
+        </h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+          ${campoRevisao('rev_dia', 'Dia', f.dia || '')}
+          ${campoRevisao('rev_mes', 'Mês por extenso', f.mes || '')}
+          ${campoRevisao('rev_ano', 'Ano', f.ano || '2026')}
+        </div>
+      </div>
+
+      <!-- TESTEMUNHAS -->
+      <div style="margin-bottom:24px;background:#fff8e1;border-radius:12px;padding:16px;border:1.5px solid #f0b429;">
+        <h3 style="font-size:12px;font-weight:800;color:#7a5800;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;display:flex;align-items:center;gap:8px;">
+          <span style="background:#c9960c;color:#fff;width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:10px;">4</span>
+          Testemunhas
+        </h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+          ${campoRevisao('rev_t1_nome', 'Testemunha 1 — Nome', f.t1_nome || '')}
+          ${campoRevisao('rev_t1_rg', 'Testemunha 1 — RG', f.t1_rg || '')}
+          ${campoRevisao('rev_t1_cpf', 'Testemunha 1 — CPF', f.t1_cpf || '')}
+          ${campoRevisao('rev_t2_nome', 'Testemunha 2 — Nome', f.t2_nome || '')}
+          ${campoRevisao('rev_t2_rg', 'Testemunha 2 — RG', f.t2_rg || '')}
+          ${campoRevisao('rev_t2_cpf', 'Testemunha 2 — CPF', f.t2_cpf || '')}
+        </div>
+      </div>
+
+      <!-- BOTÕES -->
+      <div style="display:flex;gap:12px;justify-content:flex-end;">
+        <button onclick="document.getElementById('modal-revisao').remove()" style="background:#eef1f8;border:none;border-radius:10px;padding:12px 24px;cursor:pointer;font-size:14px;font-weight:700;color:#5a6478;">Cancelar</button>
+        <button onclick="confirmarGeracaoContrato('${f.tipo||'Anunciante'}')" style="background:linear-gradient(135deg,#0a1a3c,#13316b);color:#fff;border:none;border-radius:10px;padding:12px 28px;cursor:pointer;font-size:14px;font-weight:800;box-shadow:0 4px 16px rgba(10,26,60,.25);">📄 Gerar contrato em PDF</button>
+      </div>
+    </div>`;
+
+  document.body.appendChild(modal);
+}
+
+function campoRevisao(id, label, valor, span, tipo, extraAttr) {
+  const estilo = span ? `grid-column:${span};` : '';
+  extraAttr = extraAttr || '';
+  if (tipo === 'textarea') {
+    return `<div style="${estilo}">
+      <label style="display:block;font-size:10px;font-weight:700;color:#5a6478;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;">${label}</label>
+      <textarea id="${id}" rows="3" style="width:100%;padding:8px 12px;border:1.5px solid #dde3ee;border-radius:8px;font-size:13px;font-family:inherit;resize:vertical;" ${extraAttr}>${valor||''}</textarea>
+    </div>`;
+  }
+  return `<div style="${estilo}">
+    <label style="display:block;font-size:10px;font-weight:700;color:#5a6478;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;">${label}</label>
+    <input type="text" id="${id}" value="${(valor||'').replace(/"/g,'&quot;')}" style="width:100%;padding:8px 12px;border:1.5px solid #dde3ee;border-radius:8px;font-size:13px;font-family:inherit;color:#0a1a3c;" ${extraAttr}>
+  </div>`;
+}
+
+function valorPorExtenso(valor) {
+  const v = parseFloat(String(valor).replace(/[^0-9,\.]/g,'').replace(',','.'));
+  if (isNaN(v) || v === 0) return '';
+  const unidades = ['','um','dois','três','quatro','cinco','seis','sete','oito','nove',
+    'dez','onze','doze','treze','quatorze','quinze','dezesseis','dezessete','dezoito','dezenove'];
+  const dezenas = ['','','vinte','trinta','quarenta','cinquenta','sessenta','setenta','oitenta','noventa'];
+  const centenas = ['','cento','duzentos','trezentos','quatrocentos','quinhentos',
+    'seiscentos','setecentos','oitocentos','novecentos'];
+  function ext(n) {
+    n = Math.floor(n);
+    if (n === 0) return '';
+    if (n === 100) return 'cem';
+    if (n < 20) return unidades[n];
+    if (n < 100) { const d=Math.floor(n/10),u=n%10; return dezenas[d]+(u?' e '+unidades[u]:''); }
+    const c=Math.floor(n/100),r=n%100;
+    return centenas[c]+(r?' e '+ext(r):'');
+  }
+  const inteiro = Math.floor(v);
+  const centavos = Math.round((v-inteiro)*100);
+  let result = '';
+  if (inteiro >= 1000) {
+    const mil=Math.floor(inteiro/1000), resto=inteiro%1000;
+    result = (mil===1?'mil':ext(mil)+' mil');
+    if (resto>0) result += (resto<100?' e ':' ')+ext(resto);
+  } else { result = ext(inteiro); }
+  result += (inteiro===1?' real':' reais');
+  if (centavos>0) result += ' e '+ext(centavos)+(centavos===1?' centavo':' centavos');
+  return result;
+}
+
+function imprimirSomenteContrato() {
+  const conteudo = document.getElementById('g-contrato-output');
+  if (!conteudo) return;
+  const win = window.open('', '_blank', 'width=900,height=700');
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+    <title>Contrato TV Marketing</title>
+    <style>
+      body{font-family:'Times New Roman',serif;font-size:12pt;color:#000;margin:0;padding:20mm;}
+      h1,h2,h3{text-align:center;}
+      p{text-align:justify;line-height:1.8;margin:6px 0;}
+      strong{font-weight:bold;}
+      .cdoc-titulo{font-size:14pt;font-weight:bold;text-align:center;text-transform:uppercase;margin:10px 0;}
+      .cdoc-subtitulo{font-size:11pt;text-align:center;margin:4px 0;}
+      .cdoc-secao{font-weight:bold;text-align:center;margin:14px 0 6px;}
+      .cdoc-item{margin:4px 0 4px 20px;}
+      .cdoc-assinaturas{margin-top:40px;}
+      .cdoc-linha-ass{display:inline-block;width:200px;border-top:1px solid #000;text-align:center;margin:0 20px;}
+      .cdoc-testemunhas{display:flex;justify-content:space-around;margin-top:40px;}
+      .cdoc-testemunha{text-align:center;}
+      .cdoc-testemunha-linha{border-top:1px solid #000;width:200px;margin:0 auto 4px;}
+      @media print{@page{margin:15mm;}body{padding:0;}}
+    </style>
+    </head><body>${conteudo.innerHTML}</body></html>`);
+  win.document.close();
+  setTimeout(function(){ win.focus(); win.print(); }, 600);
+}
+
+// Usado apenas para o DIA DE VENCIMENTO (ordinal: "todo dia 7 (sétimo)")
+function numeroPorExtenso(n) {
+  const dias = ['','primeiro','segundo','terceiro','quarto','quinto','sexto','sétimo',
+    'oitavo','nono','dez','onze','doze','treze','quatorze','quinze','dezesseis',
+    'dezessete','dezoito','dezenove','vinte','vinte e um','vinte e dois','vinte e três',
+    'vinte e quatro','vinte e cinco','vinte e seis','vinte e sete','vinte e oito',
+    'vinte e nove','trinta','trinta e um'];
+  const num = parseInt(String(n||''));
+  if (isNaN(num)||num<1||num>31) return String(n||'');
+  return dias[num];
+}
+
+// Usado para QUANTIDADES (ex.: prazo em meses: "5" -> "cinco", não "quinto")
+function quantidadePorExtenso(n) {
+  const unidades = ['','um','dois','três','quatro','cinco','seis','sete','oito','nove',
+    'dez','onze','doze','treze','quatorze','quinze','dezesseis','dezessete','dezoito','dezenove'];
+  const dezenas = ['','','vinte','trinta','quarenta','cinquenta','sessenta','setenta','oitenta','noventa'];
+  const num = parseInt(String(n||''));
+  if (isNaN(num) || num < 1) return String(n||'');
+  if (num < 20) return unidades[num];
+  if (num < 100) {
+    const d = Math.floor(num/10), u = num%10;
+    return dezenas[d] + (u ? ' e ' + unidades[u] : '');
+  }
+  return String(num);
+}
+
+function gv2(id){ return (document.getElementById(id)||{}).value || ''; }
+
+function confirmarGeracaoContrato(tipoOriginal){
+  const tipo = (tipoOriginal || 'Anunciante').toLowerCase();
+  const geraAnunciante = tipo.includes('anunciante') || tipo.includes('ambos');
+  const geraParceiro   = tipo.includes('parceiro')   || tipo.includes('ambos');
+
+  const locaisArr = gv2('rev_locais').split(/[,\n]/).map(function(l){ return l.trim(); }).filter(Boolean);
+  const locaisHTML = locaisArr.length
+    ? locaisArr.map(function(l){ return `<p class="cdoc-item">- ${l}</p>`; }).join('')
+    : '<p class="cdoc-item">- ______________________</p>';
+
+  let htmlFinal = '';
+
+  if(geraAnunciante){
+    htmlFinal += gContratoAnuncianteDados({
+      razao: gv2('rev_razao'), cnpj: gv2('rev_cnpj'),
+      tipo: gv2('rev_tipo_pessoa') || 'Pessoa Jurídica',
+      end: gv2('rev_endereco'), rep: gv2('rev_representante'),
+      rep_cpf: gv2('rev_rep_cpf'),
+      locaisHTML: locaisHTML,
+      prazo: gv2('rev_prazo'), prazoE: gv2('rev_prazo_ext'),
+      valor: gv2('rev_valor'), valorE: gv2('rev_valor_ext'),
+      venc: gv2('rev_vencimento'), vencE: gv2('rev_vencimento_ext'),
+      forma_pag: gv2('rev_forma_pag'),
+      dia: gv2('rev_dia'), mes: gv2('rev_mes'), ano: gv2('rev_ano'),
+      t1n: gv2('rev_t1_nome'), t1r: gv2('rev_t1_rg'), t1c: gv2('rev_t1_cpf'),
+      t2n: gv2('rev_t2_nome'), t2r: gv2('rev_t2_rg'), t2c: gv2('rev_t2_cpf'),
+    });
+  }
+
+  if(geraParceiro){
+    if(geraAnunciante) htmlFinal += '<div style="page-break-before:always;break-before:page;height:1px;"></div>';
+    htmlFinal += gContratoParceiroDados({
+      razao: gv2('rev_razao'), cnpj: gv2('rev_cnpj'),
+      tipo: gv2('rev_tipo_pessoa') || 'Pessoa Jurídica',
+      end: gv2('rev_endereco'), rep: gv2('rev_representante'),
+      qtd: '', qtdE: '', marca: '', modelo: '', pol: '', prazoRet: '7',
+      dia: gv2('rev_dia'), mes: gv2('rev_mes'), ano: gv2('rev_ano'),
+      t1n: gv2('rev_t1_nome'), t1r: gv2('rev_t1_rg'), t1c: gv2('rev_t1_cpf'),
+      t2n: gv2('rev_t2_nome'), t2r: gv2('rev_t2_rg'), t2c: gv2('rev_t2_cpf'),
+    });
+  }
+
+  // Fecha o modal
+  const modal = document.getElementById('modal-revisao');
+  if(modal) modal.remove();
+
+  // Exibe o contrato
+  document.getElementById('g-contrato-output').innerHTML = htmlFinal;
+  document.getElementById('g-preview').style.display = 'block';
+  document.getElementById('g-preview').scrollIntoView({behavior:'smooth'});
+}
+
+// ── FORMULÁRIO MANUAL DE CONTRATO ─────────────────────────────────────
+
+function preencherDataAssinatura(prefixo) {
+  const input = document.getElementById(prefixo + '_data');
+  if (!input || !input.value) return;
+  const d = new Date(input.value + 'T00:00:00');
+  const meses = ['janeiro','fevereiro','março','abril','maio','junho',
+    'julho','agosto','setembro','outubro','novembro','dezembro'];
+  const diaEl = document.getElementById(prefixo + '_dia');
+  const mesEl = document.getElementById(prefixo + '_mes');
+  const anoEl = document.getElementById(prefixo + '_ano');
+  if (diaEl) diaEl.value = d.getDate();
+  if (mesEl) mesEl.value = meses[d.getMonth()];
+  if (anoEl) anoEl.value = d.getFullYear();
+}
+
+// Carrega locais da planilha (aba LISTA TVS INSTALADAS) nos checkboxes do formulário manual
+let locaisData = null; // cache em memória — evita rebuscar toda vez que a aba é aberta
+
+async function carregarLocaisFormManual(forcarRecarga) {
+  const cont = document.getElementById('g-locais-checkboxes');
+  if (!cont) return;
+
+  if (forcarRecarga) locaisData = null;
+
+  if (!locaisData) {
+    cont.innerHTML = '<p style="font-size:12px;color:#888;">🔄 Carregando locais da planilha...</p>';
+    const urlBase = obterUrlAppsScript();
+    if (!urlBase) {
+      cont.innerHTML = '<p style="font-size:12px;color:#888;">URL do Apps Script não configurada. Use o botão abaixo para adicionar manualmente.</p>';
+      return;
+    }
+    try {
+      const resp = await fetch(urlBase + '?acao=locais_completos');
+      const json = await resp.json();
+      locaisData = (json.locais || []).map(function(l){
+        return { nome: l.nome, localizacao: l.localizacao };
+      });
+    } catch (e) {
+      cont.innerHTML = '<p style="font-size:12px;color:#c0392b;">❌ Não foi possível carregar os locais da planilha: ' + e.message + '. Use o botão abaixo para adicionar manualmente.</p>';
+      return;
+    }
+  }
+
+  if (locaisData.length > 0) {
+    cont.innerHTML = locaisData.map(function(l) {
+      return `<label style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:#f4f6fb;border-radius:8px;cursor:pointer;font-size:13px;">
+        <input type="checkbox" class="check-local-manual" value="${l.nome}" style="width:15px;height:15px;accent-color:var(--verde);">
+        <span><strong>${l.nome}</strong> <span style="color:#888;font-size:11px;">— ${l.localizacao}</span></span>
+      </label>`;
+    }).join('');
+  } else {
+    cont.innerHTML = '<p style="font-size:12px;color:#888;">Nenhum local encontrado na planilha. Use o botão abaixo para adicionar manualmente.</p>';
+  }
+}
+
+function gAdicionarLocal() {
+  const lista = document.getElementById('g-locais-lista');
+  const div = document.createElement('div');
+  div.className = 'glocal-item';
+  div.innerHTML = '<input type="text" placeholder="Ex: Barbearia RAL — Vila Bourghese"><button onclick="gRemoverLocal(this)">×</button>';
+  lista.appendChild(div);
+}
+
+function gRemoverLocal(btn) {
+  btn.closest('.glocal-item').remove();
+}
+
+function gLocaisSelecionados() {
+  const locais = [];
+  // Checkboxes marcados
+  document.querySelectorAll('.check-local-manual:checked').forEach(function(c) {
+    locais.push(c.value);
+  });
+  // Campos manuais
+  document.querySelectorAll('#g-locais-lista .glocal-item input').forEach(function(inp) {
+    if (inp.value.trim()) locais.push(inp.value.trim());
+  });
+  return locais;
+}
+
+function montarEnderecoManual(prefixo) {
+  const g = function(id) { return (document.getElementById(prefixo + '_' + id)||{}).value || ''; };
+  return [g('rua'), g('numero'), g('complemento'), g('bairro'),
+    g('cidade') + (g('uf') ? ' - ' + g('uf') : ''),
+    g('cep') ? 'CEP ' + g('cep') : '']
+    .filter(function(v){ return v && v.trim() && v.trim() !== '-'; }).join(', ');
+}
+
+function gLimpar() {
+  if(!confirm('Limpar todos os campos?')) return;
+  ['a_razao','a_cnpj','a_telefone','a_email','a_rua','a_numero','a_complemento',
+   'a_bairro','a_cidade','a_cep','a_representante','a_rep_cpf',
+   'a_valor','a_valor_ext','a_prazo_ext','a_vencimento_ext',
+   'a_mes','a_t1_nome','a_t1_rg','a_t1_cpf','a_t2_nome','a_t2_rg','a_t2_cpf'].forEach(function(id){
+    const el = document.getElementById(id);
+    if(el) el.value = '';
+  });
+  document.querySelectorAll('.check-local-manual').forEach(function(c){ c.checked = false; });
+  document.getElementById('g-locais-lista').innerHTML = '';
+  document.getElementById('g-preview').style.display = 'none';
+}
+
+function gGerarPreview() {
+  const tipo = document.getElementById('tipoContrato')
+    ? document.getElementById('tipoContrato').value
+    : (document.getElementById('gform-anunciante').style.display !== 'none' ? 'anunciante' : 'parceiro');
+
+  const locais = gLocaisSelecionados();
+  const locaisHTML = locais.length
+    ? locais.map(function(l){ return `<p style="margin-left:20px;">- ${l}</p>`; }).join('')
+    : '<p style="margin-left:20px;">- ______________________</p>';
+
+  let htmlFinal = '';
+
+  if (tipo === 'anunciante' || tipo === 'ambos') {
+    const endereco = montarEnderecoManual('a');
+    const prazo = (document.getElementById('a_prazo')||{}).value || '12';
+    const valor = (document.getElementById('a_valor')||{}).value || '';
+    const venc = (document.getElementById('a_vencimento')||{}).value || '5';
+    const prazoExtFull = (document.getElementById('a_prazo_ext')||{}).value || quantidadePorExtenso(prazo);
+    htmlFinal += gContratoAnuncianteDados({
+      razao:       gv2('a_razao'),
+      cnpj:        gv2('a_cnpj'),
+      tipo:        gv2('a_tipo') || 'pessoa jurídica',
+      end:         endereco,
+      rep:         gv2('a_representante'),
+      rep_cpf:     gv2('a_rep_cpf'),
+      locaisHTML:  locaisHTML,
+      prazo:       prazo,
+      prazoE:      prazoExtFull,
+      valor:       valor,
+      valorE:      gv2('a_valor_ext') || valorPorExtenso(valor),
+      venc:        venc,
+      vencE:       gv2('a_vencimento_ext') || numeroPorExtenso(venc),
+      forma_pag:   gv2('a_forma_pag') || gv2('a_plano'),
+      dia:         gv2('a_dia'),
+      mes:         gv2('a_mes'),
+      ano:         gv2('a_ano') || '2026',
+      t1n: gv2('a_t1_nome'), t1r: gv2('a_t1_rg'), t1c: gv2('a_t1_cpf'),
+      t2n: gv2('a_t2_nome'), t2r: gv2('a_t2_rg'), t2c: gv2('a_t2_cpf'),
+    });
+  }
+
+  if (tipo === 'parceiro' || tipo === 'ambos') {
+    if (tipo === 'ambos') htmlFinal += '<div style="page-break-before:always;break-before:page;height:1px;"></div>';
+    const endP = montarEnderecoManual('p');
+    htmlFinal += gContratoParceiroDados({
+      razao:       gv2('p_razao'),
+      cnpj:        gv2('p_cnpj'),
+      tipo:        gv2('p_tipo') || 'pessoa jurídica',
+      end:         endP,
+      rep:         gv2('p_representante'),
+      rep_cpf:     gv2('p_rep_cpf'),
+      qtd:         gv2('p_qtd_tv') || '1',
+      qtdE:        gv2('p_qtd_tv_ext') || 'um',
+      marca:       gv2('p_marca'),
+      modelo:      gv2('p_modelo'),
+      pol:         gv2('p_polegadas'),
+      prazoRet:    gv2('p_prazo_retirada') || '7',
+      dia:         gv2('p_dia'),
+      mes:         gv2('p_mes'),
+      ano:         gv2('p_ano') || '2026',
+      t1n: gv2('p_t1_nome'), t1r: gv2('p_t1_rg'), t1c: gv2('p_t1_cpf'),
+      t2n: gv2('p_t2_nome'), t2r: gv2('p_t2_rg'), t2c: gv2('p_t2_cpf'),
+    });
+  }
+
+  document.getElementById('g-contrato-output').innerHTML = htmlFinal;
+  document.getElementById('g-preview').style.display = 'block';
+  document.getElementById('g-preview').scrollIntoView({behavior:'smooth'});
+}
+
+// Carrega locais quando a aba Gerar Contrato é aberta
+document.addEventListener('DOMContentLoaded', function(){
+  const abaGerar = document.querySelector('[onclick*="renderTabGerar"]');
+  if (abaGerar) {
+    const orig = abaGerar.getAttribute('onclick');
+    abaGerar.setAttribute('onclick', orig + '; setTimeout(carregarLocaisFormManual, 300);');
+  }
+});
+
+async function deletarPendente(linha, btn){
+  if(!confirm('Remover este formulário da lista de pendentes?')) return;
+  const urlBase = obterUrlAppsScript();
+  if(!urlBase){ alert('URL do Apps Script não configurada.'); return; }
+  try{
+    await fetch(urlBase + '?acao=deletar&linha=' + linha);
+    btn.closest('.pendente-card').remove();
+    const restantes = document.querySelectorAll('.pendente-card').length;
+    document.getElementById('pendentes-status').textContent =
+      restantes === 0 ? 'Nenhum formulário pendente.' : `${restantes} formulário(s) pendente(s).`;
+  }catch(e){
+    alert('Não foi possível remover: ' + e.message);
+  }
+}
+
+// versões que aceitam dados direto (usadas pelo gerarContratoDoForms)
+function gContratoAnuncianteDados(d){
+  const razao=d.razao||'______________________', cnpj=d.cnpj||'______________________';
+  const tipoPessoa=d.tipo||'pessoa jurídica';
+  const end=d.end||'______________________', rep=d.rep||'______________________';
+  const repCpf=d.rep_cpf||'______________________';
+  const prazo=d.prazo||'x', prazoE=d.prazoE||'xxxx';
+  const valor=d.valor||'xxxxx';
+  const valorE = d.valorE && d.valorE.trim() ? d.valorE : valorPorExtenso(d.valor||'0');
+  const venc=d.venc||'xxxxx';
+  const vencE = d.vencE && d.vencE.trim() ? d.vencE : numeroPorExtenso(d.venc);
+  const prazoNum = d.prazo||'x';
+  const prazoExtFull = d.prazoE && d.prazoE.trim() ? d.prazoE : quantidadePorExtenso(prazoNum);
+  // Forma de pagamento
+  const fpRaw = (d.forma_pag||'').toUpperCase();
+  const formaPag = fpRaw.includes('PIX') ? 'PIX' : fpRaw.includes('CART') ? 'cartão de crédito' : fpRaw.includes('BOLETO') ? 'boleto bancário' : (d.forma_pag||'PIX, cartão de crédito ou boleto bancário');
+  const dia=d.dia||'xx', mes=d.mes||'xxxxxx', ano=d.ano||'2026';
+  const t1n=d.t1n||'_______________________', t1r=d.t1r||'_______', t1c=d.t1c||'_______';
+  const t2n=d.t2n||'_______________________', t2r=d.t2r||'_______', t2c=d.t2c||'_______';
+  return `<div style="font-family:'Times New Roman',serif;font-size:12pt;color:#000;line-height:1.8;padding:20px;">
+    <p style="text-align:center;font-weight:bold;font-size:13pt;text-transform:uppercase;">CONTRATO DE VEICULAÇÃO DE PUBLICIDADE E INSERÇÃO DE PATROCÍNIOS</p>
+    <p style="text-align:center;font-style:italic;">-DISPONIBILIZAÇÃO DE TELEVISÃO PARA INSERÇÃO DE APOIOS CULTURAIS/PUBLICITÁRIOS-</p>
+    <p style="text-align:center;font-weight:bold;margin:16px 0 4px;">-DAS PARTES-</p>
+    <p><strong>CONTRATADA:</strong></p>
+    <p><strong>FRANÇA PRODUÇÕES E SERVIÇOS LTDA.</strong>, pessoa jurídica inscrita no CNPJ sob o nº 46.315.220/0001-39, com sede na Rua Eugênio Siqueira Salgado, nº 101 - Casa B, Bosque da Princesa, Pindamonhangaba (SP), CEP. 12401-470, representada por <strong>Bruno de Oliveira França</strong>, brasileiro, solteiro, empresário, RG nº 45.148.638-6 e CPF nº 425.638.008-62.</p>
+    <p><strong>CONTRATANTE:</strong></p>
+    <p><strong>${razao}</strong>, ${tipoPessoa}, inscrita no CNPJ/CPF sob nº ${cnpj}, com sede/endereço à ${end}, neste ato representada por <strong>${rep}</strong>, CPF nº ${repCpf}.</p>
+    <p style="text-align:center;font-weight:bold;margin:16px 0 4px;">-DO CORPO DE CLÁUSULAS-</p>
+    <p style="text-indent:2em;">Pelo presente instrumento, as Partes acima qualificadas, por si e seus sucessores, têm entre si, certo e ajustado, o presente Contrato de veiculação de publicidade, o qual se regerá pelas cláusulas e condições a seguir discriminadas:</p>
+    <p><strong>CLÁUSULA PRIMEIRA – DO OBJETO:</strong></p>
+    <p>1.1. O presente Contrato tem como objeto a veiculação de conteúdo publicitário e/ou institucional (apoio) do CONTRATANTE em televisores operados e disponibilizados pela CONTRATADA, instalados em estabelecimentos comerciais parceiros, conforme locais e condições previamente indicados, que fazem parte da proposta comercial.</p>
+    <p>1.2. Para a conclusão do objeto deste Contrato, as Partes acordam que a CONTRATADA irá inserir os apoios nos televisores instalados nos seguintes locais/estabelecimentos:</p>
+    ${d.locaisHTML||'<p style="margin-left:20px;">- ______________________</p>'}
+    <p>1.3. A veiculação ocorrerá por meio de exibição digital de anúncios, vídeos, imagens ou artes estáticas, em formato e duração previamente acordados entre as Partes. Além disso, os anúncios serão exibidos dentro da programação definida pela CONTRATADA, respeitando: i) tempo de exibição; ii) frequência diária; iii) período contratado; e iv) locais de exibição.</p>
+    <p>1.4. A CONTRATADA fica autorizada, desde já, a organizar a grade de exibição de forma rotativa, a seu critério, juntamente com outros anunciantes, garantindo a visibilidade proporcional ao plano contratado.</p>
+    <p>1.5. O conteúdo que será veiculado será fornecido, exclusivamente, pela CONTRATANTE, que se responsabilizará integralmente pela veracidade das informações; direitos autorais, de imagem e propriedade intelectual; bem como com a conformidade com a legislação vigente e normas publicitárias.</p>
+    <p>1.5.1. A CONTRATADA poderá recusar conteúdos que violem a legislação; sejam ofensivos, discriminatórios ou ilícitos; contrariem políticas internas ou comprometam a imagem dos estabelecimentos parceiros.</p>
+    <p><strong>CLÁUSULA SEGUNDA – DO PRAZO DE VIGÊNCIA:</strong></p>
+    <p>2.1. O presente Contrato terá como vigência o período de ${prazoNum} (${prazoExtFull}) meses, contados da data de sua assinatura.</p>
+    <p>2.2. Qualquer das Partes poderá rescindir este instrumento a qualquer tempo, ainda que durante o período de vigência, desde que mediante prévia e expressa comunicação pela Parte interessada com 30 (trinta) dias. Nesta hipótese, os valores proporcionalmente devidos pelo CONTRATANTE deverão ser quitados até a data da efetiva rescisão.</p>
+    <p>2.3. Operada a rescisão, a CONTRATADA fica autorizada, desde já, a cessar a veiculação dos anúncios de forma imediata.</p>
+    <p><strong>CLÁUSULA TERCEIRA – DA CONTRAPRESTAÇÃO:</strong></p>
+    <p>3.1. A CONTRATADA, de acordo com o plano escolhido, será responsável pelo pagamento da contraprestação mensal fixada no valor de R$ ${valor} (${valorE}), vencível até todo dia ${venc} (${vencE}) de cada mês, que poderá se dar via ${formaPag}.</p>
+    <p>3.2. O não-pagamento na data acordada implicará na imediata suspensão da veiculação até a regularização, além da incidência dos juros legais e atualização monetária e multa de 10% (dez por cento) calculada sobre o valor do débito.</p>
+    <p>3.2.1. Uma vez regularizado o débito, a CONTRATADA compromete-se a restabelecer, de forma imediata, a veiculação dos anúncios.</p>
+    <p><strong>CLÁUSULA QUARTA – DAS CONDUTAS ÉTICAS:</strong></p>
+    <p>4.1. Acordam as Partes que será permitido, no máximo, 2 (dois) anunciantes por segmento comercial, garantindo-se, assim, equilíbrio e ética na exibição das publicidades.</p>
+    <p>4.2. Fica estabelecido, também, o limite máximo de 40 (quarenta) anunciantes por televisão, com o objetivo de assegurar a frequência adequada de exibição para todos os apoios.</p>
+    <p><strong>CLÁUSULA QUINTA – DAS MULTAS E RESSARCIMENTOS:</strong></p>
+    <p>5.1. Em caso de rescisão antecipada por iniciativa do CONTRATANTE, será aplicada multa correspondente a 30% (trinta por cento) sobre o valor restante do Contrato até a data projetada para o seu encerramento.</p>
+    <p><strong>CLÁUSULA SEXTA – DAS DISPOSIÇÕES GERAIS:</strong></p>
+    <p>6.1. O presente Contrato não gera vínculo empregatício, societário ou de representação comercial entre as Partes.</p>
+    <p>6.2. As Partes se comprometem a manter sigilo sobre as informações comerciais, estratégicas e financeiras obtidas em razão deste Contrato.</p>
+    <p>6.3. O presente instrumento poderá ser firmado através de assinatura eletrônica, garantida, de forma inequívoca, a eficácia, validade e aceite quanto aos seus termos, condições e obrigações, em conformidade com o disposto no art. 10, §2.º da MP 2200/2001, bem como Lei nº 14.063, de 23 de setembro de 2020.</p>
+    <p>6.4. A contratação da presente relação se dá sob a égide do disposto no artigo 593 e seguintes do Código Civil Brasileiro, não configurando, em nenhuma hipótese, relação empregatícia.</p>
+    <p>6.5. O presente Contrato encerra todas as tratativas havidas entre CONTRATANTE e CONTRATADA, não sendo admitido qualquer tipo de reivindicação quanto ao que aqui não esteja expressamente previsto.</p>
+    <p>6.6. Fica eleito o foro da comarca de Pindamonhangaba (SP) como competente para resolução de qualquer questão resultante deste Contrato, com renúncia expressa a qualquer outro, por mais privilegiado que seja.</p>
+    <p style="text-indent:2em;margin-top:16px;">E assim, por estarem firmes e ajustadas, as Partes firmam o presente instrumento em 2 (duas) vias de igual teor e forma, na presença das testemunhas de lei, que também o subscrevem, para que surta seus jurídicos e legais efeitos.</p>
+    <p style="text-indent:2em;">Pindamonhangaba (SP), ${dia} de ${mes} de ${ano}.</p>
+    <div style="display:flex;justify-content:space-around;margin-top:48px;text-align:center;">
+      <div><div style="border-top:1px solid #000;width:220px;margin:0 auto 6px;"></div><strong>FRANÇA PRODUÇÕES E SERVIÇOS LTDA.</strong><br>Bruno de Oliveira França<br><em>CONTRATADA</em></div>
+      <div><div style="border-top:1px solid #000;width:220px;margin:0 auto 6px;"></div><strong>${razao}</strong><br>${rep}<br><em>CONTRATANTE</em></div>
+    </div>
+    <div style="margin-top:48px;">
+      <p><strong>TESTEMUNHAS:</strong></p>
+      <div style="display:flex;justify-content:space-around;margin-top:16px;text-align:center;">
+        <div><div style="border-top:1px solid #000;width:200px;margin:0 auto 6px;"></div>Nome: ${t1n}<br>RG: ${t1r}<br>CPF: ${t1c}</div>
+        <div><div style="border-top:1px solid #000;width:200px;margin:0 auto 6px;"></div>Nome: ${t2n}<br>RG: ${t2r}<br>CPF: ${t2c}</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+
+function gContratoParceiroDados(d){
+  const razao=d.razao||'______________________', cnpj=d.cnpj||'______________________';
+  const tipoPessoa2=d.tipo||'pessoa jurídica';
+  const end=d.end||'______________________', rep=d.rep||'______________________';
+  const repCpf2=d.rep_cpf||'______________________';
+  const qtd=d.qtd||'___', qtdE=d.qtdE||'______';
+  const marca=d.marca||'______', modelo=d.modelo||'______', pol=d.pol||'______';
+  const prazoRet=d.prazoRet||'___';
+  const dia=d.dia||'xx', mes=d.mes||'xxxxxx', ano=d.ano||'2026';
+  const t1n=d.t1n||'_______________________', t1r=d.t1r||'_______', t1c=d.t1c||'_______';
+  const t2n=d.t2n||'_______________________', t2r=d.t2r||'_______', t2c=d.t2c||'_______';
+  return `<div style="font-family:'Times New Roman',serif;font-size:12pt;color:#000;line-height:1.8;padding:20px;">
+    <p style="text-align:center;font-weight:bold;font-size:13pt;text-transform:uppercase;">CONTRATO DE PRESTAÇÃO DE SERVIÇOS</p>
+    <p style="text-align:center;font-style:italic;">-DISPONIBILIZAÇÃO DE TELEVISÃO PARA INSERÇÃO DE APOIOS CULTURAIS/PUBLICITÁRIOS-</p>
+    <p style="text-align:center;font-weight:bold;margin:16px 0 4px;">-DAS PARTES-</p>
+    <p><strong>CONTRATADA:</strong></p>
+    <p><strong>FRANÇA PRODUÇÕES E SERVIÇOS LTDA.</strong>, pessoa jurídica inscrita no CNPJ sob o nº 46.315.220/0001-39, com sede na Rua Eugênio Siqueira Salgado, nº 101 - Casa B, Bosque da Princesa, Pindamonhangaba (SP), CEP. 12401-470, representada por <strong>Bruno de Oliveira França</strong>, brasileiro, solteiro, empresário, RG nº xxxxxxx e CPF nº xxxxxxxxx.</p>
+    <p><strong>CONTRATANTE:</strong></p>
+    <p><strong>${razao}</strong>, ${tipoPessoa2}, inscrita no CNPJ/CPF sob nº ${cnpj}, com sede/endereço à ${end}, neste ato representada por <strong>${rep}</strong>, CPF nº ${repCpf2}.</p>
+    <p style="text-align:center;font-weight:bold;margin:16px 0 4px;">-DO CORPO DE CLÁUSULAS-</p>
+    <p style="text-indent:2em;">Pelo presente instrumento, as Partes acima qualificadas, por si e seus sucessores, têm entre si, certo e ajustado, o presente contrato de prestação de serviços, o qual se regear pelas cláusulas e condições a seguir discriminadas:</p>
+    <p><strong>CLÁUSULA PRIMEIRA – DO OBJETO:</strong></p>
+    <p>1.1. O presente Contrato tem como objeto a disponibilização, instalação e manutenção de equipamentos de exibição audiovisual (televisores), bem como a cessão de espaço para a inserção de conteúdo publicitário e institucional (apoios) de terceiros.</p>
+    <p>1.2. A CONTRATADA disponibilizará os equipamentos de sua propriedade, em perfeito estado de funcionamento, exclusivamente para a finalidade de exibição do conteúdo previamente definido (apoios culturais/publicitários).</p>
+    <p>1.3. Nesta oportunidade, acordam as Partes que a CONTRATADA disponibilizará o número de ${qtd} (${qtdE}) equipamentos, dos seguintes modelos:</p>
+    <p style="margin-left:20px;">- Marca: ${marca}</p>
+    <p style="margin-left:20px;">- Modelo: ${modelo}</p>
+    <p style="margin-left:20px;">- Polegadas: ${pol}</p>
+    <p>1.3.1. Em caso de ampliação do número de equipamentos instalados, o modelo de repasse financeiro previsto neste Contrato será aplicado individualmente a cada televisão adicional.</p>
+    <p>1.4. Os equipamentos permanecerão como propriedade exclusiva da CONTRATADA, não se caracterizando cessão, comodato definitivo ou transferência de posse. Ao final da prestação dos serviços, o CONTRATANTE se compromete a devolver os aparelhos à CONTRATADA, também em perfeito estado de conservação, salvo os desgastes naturais em virtude do uso cotidiano.</p>
+    <p>1.5. O CONTRATANTE se compromete a fornecer a infraestrutura mínima necessária ao funcionamento dos equipamentos, incluindo fornecimento de energia elétrica e acesso ao local durante o horário comercial, caso se faça necessário.</p>
+    <p><strong>CLÁUSULA SEGUNDA – DAS RESPONSABILIDADES:</strong></p>
+    <p>2.1. <strong>Manutenção e Suporte Técnico</strong>: A CONTRATADA será responsável pela manutenção preventiva e corretiva das televisões instaladas, comprometendo-se a realizar os reparos necessários em um prazo máximo de 2 (dois) dias úteis, a contar da comunicação da falha pelo CONTRATANTE. Os custos decorrentes de desgaste natural ou defeitos de fabricação serão de responsabilidade da CONTRATADA. Danos causados por mau uso e/ou vandalismo serão de responsabilidade do CONTRATANTE.</p>
+    <p>2.2. <strong>Canais de Comunicação</strong>: Compete ao CONTRATANTE ligar e desligar diariamente os equipamentos, verificar se os anúncios estão sendo exibidos corretamente e comunicar qualquer falha pelo telefone (12) 99756-7898 ou outro canal formalmente indicado pela CONTRATADA para a solicitação de suporte técnico, disponível em horário comercial.</p>
+    <p>2.3. Competirá à CONTRATADA, ainda, gerenciar os anunciantes e o conteúdo exibido nos equipamentos.</p>
+    <p>2.4. Caberá ao CONTRATANTE zelar pela integridade dos equipamentos, comunicar imediatamente qualquer dano ou falha, não permitir o uso dos equipamentos para fins diversos, bem como não remover ou desligar os equipamentos sem prévia e expressa autorização da CONTRATADA.</p>
+    <p><strong>CLÁUSULA TERCEIRA – DO PRAZO DE VIGÊNCIA:</strong></p>
+    <p>3.1. O presente Contrato terá como vigência o período de 12 (doze) meses, contados da data de sua assinatura.</p>
+    <p>3.2. Qualquer das Partes poderá rescindir este instrumento a qualquer tempo, ainda que durante o período de vigência, desde que mediante prévia e expressa comunicação pela parte interessada com 30 (trinta) dias. Nesta hipótese, os valores proporcionalmente devidos pelo CONTRATANTE deverão ser quitados até a data da efetiva rescisão.</p>
+    <p>3.3. Operada a rescisão, a CONTRATADA fica autorizada, desde já, a retirar os equipamentos no prazo máximo de ${prazoRet} dias.</p>
+    <p><strong>CLÁUSULA QUARTA – DO REPASSE FINANCEIRO:</strong></p>
+    <p>4.1. A CONTRATADA, conforme objeto, será responsável pela captação dos anunciantes, devendo repassar ao CONTRATANTE os valores captados de forma progressiva, conforme número de apoiadores ativos por televisão, observando-se a seguinte regra:</p>
+    <p style="margin-left:20px;">• Até 10 (dez) anunciantes: 10% (dez por cento);</p>
+    <p style="margin-left:20px;">• Até 20 (vinte) anunciantes: 20% (vinte por cento);</p>
+    <p style="margin-left:20px;">• Até 30 (trinta) anunciantes: 30% (trinta por cento);</p>
+    <p style="margin-left:20px;">• Até 40 (quarenta) anunciantes: 40% (quarenta por cento).</p>
+    <p>4.2. Os repasses ocorrerão nos dias 5 (cinco) e 20 (vinte) de cada mês, em ciclos financeiros de 30 (trinta) dias. A captação, controle, faturamento e recebimento dos anunciantes serão de responsabilidade exclusiva da CONTRATADA.</p>
+    <p>4.3. <strong>Comprovação de Anunciantes Ativos</strong>: Para fins de cálculo do repasse financeiro, o número de anunciantes ativos por televisão será verificado e comprovado pela CONTRATADA através de seu sistema de gestão de anúncios, cujos relatórios poderão ser disponibilizados ao CONTRATANTE mediante solicitação formal.</p>
+    <p>4.4. As Partes acordam que os repasses incidirão tão somente sobre os valores líquidos recebidos pela CONTRATADA, descontando-se todas as eventuais taxas administrativas incidentes, tais como taxa de cartão etc.</p>
+    <p><strong>CLÁUSULA QUINTA – DAS CONDUTAS ÉTICAS E NÃO-CONCORRÊNCIA:</strong></p>
+    <p>5.1. A CONTRATADA declara ter plena ciência de que deverá observar princípios de ética, boa-fé e lealdade comercial, sendo expressamente vedada a veiculação de anunciantes que prestem o mesmo serviço ou comercializem produtos concorrentes aos do CONTRATANTE.</p>
+    <p>5.2. <strong>Definição de Concorrente</strong>: Para os fins desta cláusula, considera-se "concorrente" qualquer pessoa jurídica ou física que atue no mesmo segmento de mercado do CONTRATANTE, oferecendo produtos ou serviços similares ou idênticos.</p>
+    <p>5.3. O CONTRATANTE, neste mesmo serviço, obriga-se a não executar as atividades praticadas pela CONTRATADA por conta própria durante o período de 36 (trinta e seis) meses, a contar da rescisão deste instrumento.</p>
+    <p><strong>CLÁUSULA SEXTA – DAS MULTAS E RESSARCIMENTOS:</strong></p>
+    <p>6.1. Em caso de rescisão antecipada por culpa do CONTRATANTE, este deverá ressarcir integralmente os valores correspondentes aos contratos ativos de anunciantes já firmados e veiculados.</p>
+    <p>6.2. Além disso, deverá pagar, em favor da CONTRATADA, o valor equivalente a 50% (cinquenta por cento) calculado sobre o último repasse feito pela CONTRATADA.</p>
+    <p><strong>CLÁUSULA SÉTIMA – DAS DISPOSIÇÕES GERAIS:</strong></p>
+    <p>7.1. O presente Contrato não gera vínculo empregatício, societário ou de representação comercial entre as Partes.</p>
+    <p>7.2. As Partes se comprometem a manter sigilo sobre as informações comerciais, estratégicas e financeiras obtidas em razão deste Contrato.</p>
+    <p>7.3. O presente instrumento poderá ser firmado através de assinatura eletrônica, em conformidade com o disposto no art. 10, §2.º da MP 2200/2001, bem como Lei nº 14.063, de 23 de setembro de 2020.</p>
+    <p>7.4. A contratação da presente prestação de serviços pela CONTRATADA ao CONTRATANTE, se dá sob a égide do disposto no artigo 593 e seguintes do Código Civil Brasileiro, não configurando, em nenhuma hipótese, relação empregatícia.</p>
+    <p>7.5. O presente Contrato encerra todas as tratativas havidas entre CONTRATANTE e CONTRATADA, não sendo admitido qualquer tipo de reivindicação quanto ao que aqui não esteja expressamente previsto e contratado.</p>
+    <p>7.6. Fica eleito o foro da comarca de Pindamonhangaba (SP) como competente para resolução de qualquer questão resultante deste Contrato, com renúncia expressa a qualquer outro, por mais privilegiado que seja.</p>
+    <p style="text-indent:2em;margin-top:16px;">E assim, por estarem firmes e ajustadas, as Partes firmam o presente instrumento em 2 (duas) vias de igual teor e forma, na presença das testemunhas de lei, que também o subscrevem, para que surta seus jurídicos e legais efeitos.</p>
+    <p style="text-indent:2em;">Pindamonhangaba (SP), ${dia} de ${mes} de ${ano}.</p>
+    <div style="display:flex;justify-content:space-around;margin-top:48px;text-align:center;">
+      <div><div style="border-top:1px solid #000;width:220px;margin:0 auto 6px;"></div><strong>FRANÇA PRODUÇÕES E SERVIÇOS LTDA.</strong><br>Bruno de Oliveira França<br><em>CONTRATADA</em></div>
+      <div><div style="border-top:1px solid #000;width:220px;margin:0 auto 6px;"></div><strong>${razao}</strong><br>${rep}<br><em>CONTRATANTE</em></div>
+    </div>
+    <div style="margin-top:48px;">
+      <p><strong>TESTEMUNHAS:</strong></p>
+      <div style="display:flex;justify-content:space-around;margin-top:16px;text-align:center;">
+        <div><div style="border-top:1px solid #000;width:200px;margin:0 auto 6px;"></div>Nome: ${t1n}<br>RG: ${t1r}<br>CPF: ${t1c}</div>
+        <div><div style="border-top:1px solid #000;width:200px;margin:0 auto 6px;"></div>Nome: ${t2n}<br>RG: ${t2r}<br>CPF: ${t2c}</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+
+function imprimirRelatorioIndividual(idDiv, nomeArquivo){
+  // Seleciona apenas o relatório pai do botão clicado
+  const el = document.getElementById(idDiv);
+  if(!el) return;
+  const relatorio = el.closest('.painel');
+  if(!relatorio) return;
+
+  const conteudo = relatorio.outerHTML;
+  const win = window.open('', '_blank');
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+    <title>${nomeArquivo}</title>
+    <style>
+      body{font-family:'Segoe UI',Arial,sans-serif;padding:24px;color:#22273a;}
+      table{width:100%;border-collapse:collapse;margin:12px 0;}
+      th,td{padding:8px 10px;border:1px solid #dde3ee;font-size:12px;text-align:left;}
+      th{background:#0a1a3c;color:#fff;}
+      h2{font-size:16px;color:#0a1a3c;}
+      @media print{@page{margin:15mm;}}
+    </style>
+    </head><body>${conteudo}</body></html>`);
+  win.document.close();
+  win.document.title = nomeArquivo;
+  setTimeout(function(){ win.print(); }, 500);
+}
+
+function toggleSenha(){
+  const input = document.getElementById('input-senha');
+  const btn = document.getElementById('btn-olho');
+  if(input.type === 'password'){
+    input.type = 'text';
+    btn.textContent = '🙈';
+  } else {
+    input.type = 'password';
+    btn.textContent = '👁';
+  }
+}
+
+// ── SENHA DE ACESSO ──────────────────────────────────────────────────
+// Para mudar a senha, altere o valor abaixo
+const SENHA_PAINEL = 'Franca445566';
+
+function verificarSenha() {
+  const input = document.getElementById('input-senha');
+  const erro  = document.getElementById('erro-senha');
+  if (input.value === SENHA_PAINEL) {
+    // Salva sessão por 8 horas
+    try { sessionStorage.setItem('tvmkt_auth', Date.now()); } catch(e) {}
+    document.getElementById('tela-senha').style.display = 'none';
+    document.getElementById('conteudo-painel').style.display = 'block';
+    // Inicializa o painel após liberação
+    inicializarPainel();
+  } else {
+    erro.style.display = 'block';
+    input.value = '';
+    input.focus();
+  }
+}
+
+// Verifica se já está autenticado nesta sessão
+(function() {
+  try {
+    const auth = sessionStorage.getItem('tvmkt_auth');
+    if (auth && (Date.now() - parseInt(auth)) < 8 * 60 * 60 * 1000) {
+      document.getElementById('tela-senha').style.display = 'none';
+      document.getElementById('conteudo-painel').style.display = 'block';
+      document.addEventListener('DOMContentLoaded', inicializarPainel);
+    } else {
+      document.addEventListener('DOMContentLoaded', function(){
+        document.getElementById('input-senha').focus();
+      });
+    }
+  } catch(e) {
+    document.addEventListener('DOMContentLoaded', function(){
+      document.getElementById('input-senha').focus();
+    });
+  }
+})();
+</script>
+
+</body>
+</html>
